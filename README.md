@@ -1,7 +1,7 @@
 # aroc
-Android on Chrome OS rooting shell scripts
+Android Root on ChromeOS - a pair of Chrome OS shell scripts to make a R/W copy of the Android container and copy su therein. 
 
-## Prerequisites:
+## Prerequisites
 
 A Chrome OS device which supports Android Apps, with storage space for a ~1GB file in /usr/local.
 
@@ -44,7 +44,7 @@ Reboot
 
 Reboot again
 
-## Descriptions:
+## Descriptions
 
 #### 01Root.sh
 
@@ -62,7 +62,7 @@ Following successful execution of the above pair of scripts, the Android instanc
 
 If a backup Android image is present in its original directory, attempts to remove the symlink and restores the backup. Failing this, if a backup is present in in ~/Downloads, attempts to replace the modified image with the backup. Also attempts to return the debuggable and mount-as-read-only flags to their original configuration, and copy back the original policy.30.
 
-## Known issues:
+## Known issues
 
 ##### IMPORTANT NOTE:  If you powerwash after running the scripts, the Play Store/Android apps will no longer work. The easiest way to fix it is to restore the original Android system image with the following command (then reboot) :
 
