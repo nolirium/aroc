@@ -78,3 +78,5 @@ Further information: The current version of the script replaces the original And
  Certain mods eg. Xposed are not compatible currently.
 
 The modified system image takes up a fair amount of space in /usr/local/. Storing the image in certain other places doesn't seem to work, probably due to mount/login timings.
+
+Updates to the OS may break the procedure, and at the least may necessitate redoing all or part of it. 
