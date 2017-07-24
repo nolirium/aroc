@@ -270,7 +270,7 @@ sleep 1
 
 copy_su_x86() {
 
-echo "Copying su binaries to system/xbin/su,daemonsu,sugote, and setting permissions and contexts"
+echo "Copying su to system/xbin/su,daemonsu,sugote, and setting permissions and contexts"
 
 cd $system/xbin
 
