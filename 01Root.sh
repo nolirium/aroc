@@ -318,7 +318,7 @@ echo
 echo
 echo
 echo
-echo "sudo /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification --force --partitions $(( $(rootdev -s | sed -r 's/.*(.)$/\1/') - 1))"
+echo "sudo /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification --partitions $(( $(rootdev -s | sed -r 's/.*(.)$/\1/') - 1))"
 sleep 1
 echo
 echo
