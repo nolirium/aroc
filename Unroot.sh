@@ -24,7 +24,7 @@ mount -o remount,rw /
 
 if [ ! -f /home/chronos/user/Downloads/system.raw.img ]; then
 
-  if [ ! -f /opt/google/containers/android/system.raw.img.bk ]
+  if [ ! -f /opt/google/containers/android/system.raw.img.bk ]; then
     echo "Backup system.raw.img not found! Are you sure you want to continue?"
   fi
   
