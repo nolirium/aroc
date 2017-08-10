@@ -619,7 +619,7 @@ x86)
 SU_ARCHDIR=/home/chronos/user/Downloads/x86
 ;;
 esac
-# In case the above doesn't exist, try to dowwnload it.
+# In case the above doesn't exist, try to download it.
 if [ ! -e $SU_ARCHDIR ]; then
   download_busybox
   
