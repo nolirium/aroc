@@ -171,6 +171,7 @@ if [ $ANDROID_ARCH=armv7 ]; then
 fi
 
 echo "Moving BusyBox to /usr/local/bin"
+mkdir -p /usr/local/bin
 mv busybox /usr/local/bin/busybox
 chmod a+x /usr/local/bin/busybox
 
