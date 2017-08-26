@@ -1,5 +1,7 @@
 # aroc
-Android Root on ChromeOS - a pair of Chrome OS shell scripts to make a R/W copy of the Android container and copy su therein. 
+Android Root on ChromeOS - a pair of Chrome OS shell scripts to make a R/W copy of the Android container and copy su therein.
+
+### NOTE - Confirmed working on Chrome OS v61 (platform 9765) and below. Chrome OS version 62 is not currently supported.
 
 ## Prerequisites
 
@@ -73,7 +75,7 @@ Further information: The current version of the script replaces the original And
  
  Similarly, in order to revert to the original (unrooted) Android system if required, it will be necessary to either manually restore the backup, run the Unroot.sh script, force an update e.g. with a channel change, or restore from USB/SD.
   
- Updating the su binary from within the SuperSU GUI app won't work.
+ Updating the su binary from within the SuperSU GUI app might not work.
 
  Certain mods eg. Xposed are not compatible currently.
 
