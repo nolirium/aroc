@@ -92,9 +92,13 @@ else
     
     cp -a /home/chronos/user/Downloads/policy.30_out /etc/selinux/arc/policy/policy.30
     echo "Copying Android /sepolicy to /sepolicy.old"
-    cp -a /home/chronos/user/Downloads/policy.30_out / /opt/google/containers/android/rootfs/root/sepolicy
+    cp -a /opt/google/containers/android/rootfs/root/sepolicy /opt/google/containers/android/rootfs/root/sepolicy.old
     echo "Overwriting Android /sepolicy with patched policy.30"
-    cp -a /home/chronos/user/Downloads/policy.30_out opt/google/containers/android/rootfs/root/sepolicy
+    cp -a /home/chronos/user/Downloads/policy.30_out /opt/google/containers/android/rootfs/root/sepolicy
+    echo "Setting permissions and context for /sepolicy"
+    chown 655360  /opt/google/containers/android/rootfs/root/sepolicy
+    chgrp 655360  /opt/google/containers/android/rootfs/root/sepolicy
+    chcon  u:object_r:rootfs:s0 /opt/google/containers/android/rootfs/root/sepolicy
 
     sleep 1
     echo "Done!"
