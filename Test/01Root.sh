@@ -654,14 +654,14 @@ echo
     
 echo "Creating SuperSU directory in system/app/, copying SuperSU apk, and setting its permissions and contexts"
 
-cd $system/app
-  mkdir -p $system/app/SuperSU
+cd $system/priv-app
+  mkdir -p $system/priv-app/SuperSU
   
-cd $system/app/SuperSU
-  cp $common/Superuser.apk $system/app/SuperSU/SuperSU.apk
+cd $system/priv-app/SuperSU
+  cp $common/Superuser.apk $system/priv-app/SuperSU/SuperSU.apk
 
-  chmod 0644 $system/app/SuperSU/SuperSU.apk
-  chcon u:object_r:system_file:s0 $system/app/SuperSU/SuperSU.apk
+  chmod 0644 $system/priv-app/SuperSU/SuperSU.apk
+  chcon u:object_r:system_file:s0 $system/priv-app/SuperSU/SuperSU.apk
 
 sleep 1
 
