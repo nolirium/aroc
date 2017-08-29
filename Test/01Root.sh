@@ -56,10 +56,12 @@ if [ -e /etc/init/arc-setup-env ]; then
   
   sleep 1
 
-  echo "Setting 'export WRITABLE_MOUNT=1' and 'export ANDROID_DEBUGGABLE=1' in /etc/init/arc-setup-env"
+  echo "Setting 'export WRITABLE_MOUNT=1', 'export ANDROID_DEBUGGABLE=1' and 'export SHARE_FONTS=0' in /etc/init/arc-setup-env"
   
   sed -i 's/export WRITABLE_MOUNT=0/export WRITABLE_MOUNT=1/g' /etc/init/arc-setup-env 2>/dev/null
   sed -i 's/export ANDROID_DEBUGGABLE=0/export ANDROID_DEBUGGABLE=1/g' /etc/init/arc-setup-env 2>/dev/null
+  sed -i 's/export SHARE_FONTS=1/export SHARE_FONTS=0/g' /etc/init/arc-setup-env 2>/dev/null
+
 
 else
   echo "Copying /etc/init/arc-setup.conf and /etc/init/arc-system-mount.conf to /usr/local/Backup"
@@ -79,7 +81,7 @@ else
 
   echo "Setting 'env ANDROID_DEBUGGABLE=1' in arc-setup.conf"
 
-  sed -i 's/env ANDROID_DEBUGGABLE=0/env ANDROID_DEBUGGABLE=1/g' /etc/init/arc-setup.conf
+  sed -i 's/env ANDROID_DEBUGGABLE=0/env ANDROID_DEBUGGABLE=1/g' /etc/init/arc-setup.conf  
 fi
 
 }
@@ -652,16 +654,20 @@ echo
 
 # Copying SuperSU files to $system
     
-echo "Creating SuperSU directory in system/app/, copying SuperSU apk, and setting its permissions and contexts"
+echo "Creating SuperSU directory in system/priv-app, copying SuperSU apk, and setting its permissions and contexts"
 
 cd $system/priv-app
   mkdir -p $system/priv-app/SuperSU
+  chown 655360 $system/priv-app/SuperSU
+  chgrp 655360 $system/priv-app/SuperSU
   
 cd $system/priv-app/SuperSU
   cp $common/Superuser.apk $system/priv-app/SuperSU/SuperSU.apk
 
   chmod 0644 $system/priv-app/SuperSU/SuperSU.apk
   chcon u:object_r:system_file:s0 $system/priv-app/SuperSU/SuperSU.apk
+  chown 655360 $system/priv-app/SuperSU/SuperSU.apk
+  chgrp 655360 $system/priv-app/SuperSU/SuperSU.apk
 
 sleep 1
 
