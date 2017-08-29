@@ -1,9 +1,7 @@
 # aroc
 Android Root on ChromeOS - a pair of Chrome OS shell scripts to make a R/W copy of the Android container and copy su therein.
 
-### NOTE - Confirmed working on Chrome OS v61 (platform 9765) and below. Chrome OS version 62 is not currently supported.
-
-## Prerequisites
+### Prerequisites
 
 A Chrome OS device which supports Android Apps, with storage space for a ~1GB file in /usr/local.
 
@@ -22,7 +20,7 @@ Or:
 `sudo /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification --partitions $(( $(rootdev -s | sed -r 's/.*(.)$/\1/') - 1))`
 
 
-## Instructions
+### Instructions
 
 The scripts should be run, as root, in the following order:
 
@@ -38,15 +36,15 @@ Then open Play Store, Root Checker, Ad-Away, etc, etc.
 
 The scripts may either be downloaded and ran locally, or via curl e.g. 
 
-`curl -Ls https://raw.githubusercontent.com/nolirium/aroc/master/01Root.sh | sudo sh`
+`curl -Ls https://raw.githubusercontent.com/nolirium/aroc/master/Test/01Root.sh | sudo sh`
 
 Reboot
 
-`curl -Ls https://raw.githubusercontent.com/nolirium/aroc/master/02SEPatch.sh | sudo sh`
+`curl -Ls https://raw.githubusercontent.com/nolirium/aroc/master/Test/02SEPatch.sh | sudo sh`
 
 Reboot again
 
-## Descriptions
+### Descriptions
 
 #### 01Root.sh
 
@@ -64,7 +62,7 @@ Following successful execution of the above pair of scripts, the Android instanc
 
 If a backup Android image is present in its original directory, attempts to remove the symlink and restores the backup. Failing this, if a backup is present in in ~/Downloads, attempts to replace the modified image with the backup. Also attempts to return the debuggable and mount-as-read-only flags to their original configuration, and copy back the original policy.30.
 
-## Known issues
+### Known issues
 
 ##### IMPORTANT NOTE:  If you powerwash after running the scripts, the Play Store/Android apps will no longer work. The easiest way to fix it is to restore the original Android system image with the following command (then reboot) :
 
@@ -75,10 +73,10 @@ Further information: The current version of the script replaces the original And
  
  Similarly, in order to revert to the original (unrooted) Android system if required, it will be necessary to either manually restore the backup, run the Unroot.sh script, force an update e.g. with a channel change, or restore from USB/SD.
   
- Updating the su binary from within the SuperSU GUI app might not work.
+ Updating the su binary from within the SuperSU GUI app may not work.
 
  Certain mods eg. Xposed are not compatible currently.
 
-The modified system image takes up a fair amount of space in /usr/local/. Storing the image in certain other places doesn't seem to work, probably due to mount/login timings.
+The modified system image takes up a fair amount of space in /usr/local. Storing the image in certain other places doesn't seem to work, probably due to mount/login timings.
 
 Updates to the OS may break the procedure, and at the least may necessitate redoing all or part of it. 
