@@ -5,7 +5,7 @@
 echo "Test Rooting scripts for Android on Chrome OS"
 sleep 0.5
 echo
-echo "Version 0.22"
+echo "Version 0.23"
 sleep 0.2
 echo
 echo "Unofficial scripts to copy SuperSU files to an Android system image on Chrome OS"
@@ -43,7 +43,8 @@ else
     echo "Copying original policy.30 to /usr/local/Backup/policy.30.old"
     cp /etc/selinux/arc/policy/policy.30 /usr/local/Backup/policy.30.old
   fi
-  
+  echo "Setting SE Linux to 'Permissive' temporarily"
+  setenforce 0
   echo "Copying policy.30 to /home/chronos/user/Downloads/policy.30 to allow Android access to the file".
 
   cp -a /etc/selinux/arc/policy/policy.30 /home/chronos/user/Downloads/policy.30
@@ -89,8 +90,16 @@ else
     echo
     echo "Overwriting policy.30"
     echo "Copying patched policy from /home/chronos/user/Downloads/policy.30_out to /etc/selinux/arc/policy/policy.30"
-    
     cp -a /home/chronos/user/Downloads/policy.30_out /etc/selinux/arc/policy/policy.30
+    echo "Copying Android /sepolicy to /usr/local/Backup/sepolicy.old"
+    cp -a /opt/google/containers/android/rootfs/root/sepolicy /usr/local/Backup/sepolicy.old
+    echo "Overwriting Android /sepolicy with patched policy.30"
+    cp -a /home/chronos/user/Downloads/policy.30_out /opt/google/containers/android/rootfs/root/sepolicy
+    echo "Setting permissions and context for /sepolicy"
+    chown 655360  /opt/google/containers/android/rootfs/root/sepolicy
+    chgrp 655360  /opt/google/containers/android/rootfs/root/sepolicy
+    chcon  u:object_r:rootfs:s0 /opt/google/containers/android/rootfs/root/sepolicy
+
     sleep 1
     echo "Done!"
     echo "Please reboot now"
