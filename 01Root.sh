@@ -4,7 +4,7 @@ echo "Test Rooting scripts for Android on Chrome OS"
 sleep 0.5
 echo
 echo
-echo "Version 0.22"
+echo "Version 0.23"
 sleep 0.2
 echo
 echo "Unofficial scripts to copy SuperSU files to an Android system image on Chrome OS"
@@ -56,10 +56,12 @@ if [ -e /etc/init/arc-setup-env ]; then
   
   sleep 1
 
-  echo "Setting 'export WRITABLE_MOUNT=1' and 'export ANDROID_DEBUGGABLE=1' in /etc/init/arc-setup-env"
+  echo "Setting 'export WRITABLE_MOUNT=1', 'export ANDROID_DEBUGGABLE=1' and 'export SHARE_FONTS=0' in /etc/init/arc-setup-env"
   
   sed -i 's/export WRITABLE_MOUNT=0/export WRITABLE_MOUNT=1/g' /etc/init/arc-setup-env 2>/dev/null
   sed -i 's/export ANDROID_DEBUGGABLE=0/export ANDROID_DEBUGGABLE=1/g' /etc/init/arc-setup-env 2>/dev/null
+  sed -i 's/export SHARE_FONTS=1/export SHARE_FONTS=0/g' /etc/init/arc-setup-env 2>/dev/null
+
 
 else
   echo "Copying /etc/init/arc-setup.conf and /etc/init/arc-system-mount.conf to /usr/local/Backup"
@@ -78,8 +80,8 @@ else
   sed -i 's/env WRITABLE_MOUNT=0/env WRITABLE_MOUNT=1/g' /etc/init/arc-system-mount.conf
 
   echo "Setting 'env ANDROID_DEBUGGABLE=1' in arc-setup.conf"
-
-  sed -i 's/env ANDROID_DEBUGGABLE=0/env ANDROID_DEBUGGABLE=1/g' /etc/init/arc-setup.conf
+  
+  sed -i 's/env ANDROID_DEBUGGABLE=0/env ANDROID_DEBUGGABLE=1/g' /etc/init/arc-setup.conf  
 fi
 
 }
@@ -182,23 +184,23 @@ download_supersu() {
 echo "Downloading SuperSU-v2.82-SR1"
 mkdir -p /tmp/aroc
 cd /tmp/aroc
-wget https://download.chainfire.eu/1114/SuperSU/SR1-SuperSU-v2.82-SR1-20170608224931.zip?retrieve_file=1 -O SuperSU.zip
+wget https://download.chainfire.eu/1122/SuperSU/SR3-SuperSU-v2.82-SR3-20170813133244.zip?retrieve_file=1 -O SuperSU.zip
 
 # Check filesize
 supersu_size=$(stat -c %s /tmp/aroc/SuperSU.zip)
 
-if [ $supersu_size = 6280462 ]; then
+if [ $supersu_size = 6918737 ]; then
   echo "Unzipping SuperSU zip, and copying required directories to ~/Downloads."
   /usr/local/bin/busybox unzip SuperSU.zip
   else
   echo "Unexpected file size. Trying again..."
-  wget https://download.chainfire.eu/1114/SuperSU/SR1-SuperSU-v2.82-SR1-20170608224931.zip?retrieve_file=1 -O SuperSU.zip
+  wget https://download.chainfire.eu/1122/SuperSU/SR3-SuperSU-v2.82-SR3-20170813133244.zip?retrieve_file=1 -O SuperSU.zip
 fi
 
 # Check filesize again...
 supersu_size=$(stat -c %s /tmp/aroc/SuperSU.zip)
 
-if [ $supersu_size = 6280462 ]; then
+if [ $supersu_size = 6918737 ]; then
   echo "Unzipping SuperSU zip, and copying required directories to ~/Downloads."
   /usr/local/bin/busybox unzip SuperSU.zip
   else
@@ -652,16 +654,20 @@ echo
 
 # Copying SuperSU files to $system
     
-echo "Creating SuperSU directory in system/app/, copying SuperSU apk, and setting its permissions and contexts"
+echo "Creating SuperSU directory in system/priv-app, copying SuperSU apk, and setting its permissions and contexts"
 
-cd $system/app
-  mkdir -p $system/app/SuperSU
+cd $system/priv-app
+  mkdir -p $system/priv-app/SuperSU
+  chown 655360 $system/priv-app/SuperSU
+  chgrp 655360 $system/priv-app/SuperSU
   
-cd $system/app/SuperSU
-  cp $common/Superuser.apk $system/app/SuperSU/SuperSU.apk
+cd $system/priv-app/SuperSU
+  cp $common/Superuser.apk $system/priv-app/SuperSU/SuperSU.apk
 
-  chmod 0644 $system/app/SuperSU/SuperSU.apk
-  chcon u:object_r:system_file:s0 $system/app/SuperSU/SuperSU.apk
+  chmod 0644 $system/priv-app/SuperSU/SuperSU.apk
+  chcon u:object_r:system_file:s0 $system/priv-app/SuperSU/SuperSU.apk
+  chown 655360 $system/priv-app/SuperSU/SuperSU.apk
+  chgrp 655360 $system/priv-app/SuperSU/SuperSU.apk
 
 sleep 1
 
