@@ -1,7 +1,7 @@
 # aroc
 Android Root on ChromeOS - a pair of Chrome OS shell scripts to make a R/W copy of the Android container and copy su therein.
 
-#### Note: Issues have been encountered with running SuperSU on a couple of the recent Chrome OS versions, particularly on the Dev and Canary channels. Specifically, the version of CrOS on which the rooting procedure is known not to work properly is v62 platform 9901. On most older CrOS versions, and on the newer v62 platform 9904, they should work as expected.
+#### Note: Issues have been encountered with running SuperSU on a couple of the recent Chrome OS versions, particularly on the Dev and Canary channels. Specifically, the version of CrOS on which su/the rooting procedure is known to definitely NOT work properly is v62 platform 9901. On most older CrOS versions, and on the newer v62 platform 9904, everything should work as expected.
 
 ### Prerequisites
 
@@ -55,7 +55,7 @@ Creates the directory /usr/local/Android_Images, formats a ~ 1GB ext4 filesystem
 
 #### 02SEpatch.sh
 
-Copies an SELinux policy file found at /etc/selinux/arc/policy/policy.30 to ~/Downloads, opens an Android shell for the SuperSU policy patching command to be entered, then copies the patched policy back to the original location. Backup copies of the original policy.30 are saved at /etc/selinux/arc/policy/policy.30.old and /usr/local/Backup/policy.30.old.
+Copies an SELinux policy file found at /etc/selinux/arc/policy/policy.30 to ~/Downloads, opens an Android shell and attempts to patch the policy with SuperSU's 'supolicy' tool. If patching is successful, overwrites the original policy.30 with the patched version, and overwrites /sepolicy in the Android container with the patched policy.  Backup copies of the original policy.30 and /sepolicy are saved in /usr/local/Backup
 
 Following successful execution of the above pair of scripts, the Android instance should be rooted and fully working.
 
