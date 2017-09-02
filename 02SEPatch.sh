@@ -43,8 +43,7 @@ else
     echo "Copying original policy.30 to /usr/local/Backup/policy.30.old"
     cp /etc/selinux/arc/policy/policy.30 /usr/local/Backup/policy.30.old
   fi
-  echo "Setting SE Linux to 'Permissive' temporarily"
-  setenforce 0
+  
   echo "Copying policy.30 to /home/chronos/user/Downloads/policy.30 to allow Android access to the file".
 
   cp -a /etc/selinux/arc/policy/policy.30 /home/chronos/user/Downloads/policy.30
@@ -91,6 +90,8 @@ else
     echo "Overwriting policy.30"
     echo "Copying patched policy from /home/chronos/user/Downloads/policy.30_out to /etc/selinux/arc/policy/policy.30"
     cp -a /home/chronos/user/Downloads/policy.30_out /etc/selinux/arc/policy/policy.30
+    echo "Setting SE Linux to 'Permissive' temporarily"
+    setenforce 0
     echo "Copying Android /sepolicy to /usr/local/Backup/sepolicy.old"
     cp -a /opt/google/containers/android/rootfs/root/sepolicy /usr/local/Backup/sepolicy.old
     echo "Overwriting Android /sepolicy with patched policy.30"
