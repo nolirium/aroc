@@ -1,7 +1,7 @@
 # aroc
 Android Root on ChromeOS - a pair of Chrome OS shell scripts to make a R/W copy of the Android container and copy su therein.
 
-#### Note: Issues have been encountered with running SuperSU on a couple of the recent Chrome OS versions, particularly on the Dev and Canary channels. Specifically, the version of CrOS on which the rooting procedure is known not to work properly is v62 platform 9901. On most older OS versions, and on the newer v62 platform 9904, they should work as expected.
+#### Note: Issues have been encountered with running SuperSU on a couple of the recent Chrome OS versions, particularly on the Dev and Canary channels. Specifically, the version of CrOS on which the rooting procedure is known not to work properly is v62 platform 9901. On most older CrOS versions, and on the newer v62 platform 9904, they should work as expected.
 
 ### Prerequisites
 
