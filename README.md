@@ -1,7 +1,7 @@
 # aroc
 Android Root on ChromeOS - a pair of Chrome OS shell scripts to make a R/W copy of the Android container and copy su therein.
 
-#### Note: Issues have been encountered on the very latest Chrome OS versions due to some changes in the OS. YMMV with these scripts at this time, particularly on the Dev and Canary channels.
+##### Note: Issues have been encountered on a couple of the recent Chrome OS versions, particularly on the Dev and Canary channels. Specifically, the version of CrOS on which the scripts are known not to work is v62 platform 9901, whereas on most older OS versions, and on the newer version v62 platform 9904, they should work as expected.
 
 ### Prerequisites
 
