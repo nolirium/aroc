@@ -181,7 +181,7 @@ chmod a+x /usr/local/bin/busybox
 
 download_supersu() {
 
-echo "Downloading SuperSU-v2.82-SR1"
+echo "Downloading SuperSU-v2.82-SR3"
 mkdir -p /tmp/aroc
 cd /tmp/aroc
 wget https://download.chainfire.eu/1122/SuperSU/SR3-SuperSU-v2.82-SR3-20170813133244.zip?retrieve_file=1 -O SuperSU.zip
