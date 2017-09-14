@@ -1,0 +1,1100 @@
+#!/bin/sh
+
+# Functions (part 1)
+
+sepolicy_patch() {
+
+download_busybox () {
+  
+# Since there doesn't appear to be a built-in zip uncompresser available on the command line, if we need to download SuperSU,
+# we download BusyBox in order to unzip it. We could also install BusyBox in Android w/ its symlinks later, if we want.
+
+echo "Downloading BusyBox"
+mkdir -p /tmp/aroc
+cd /tmp/aroc
+
+if [ $ANDROID_ARCH=armv7 ]; then
+  wget https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-armv6l -O busybox
+  else
+  
+  if [ ANDROID_ARCH=x86 ]; then
+    wget https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-x86_64 -O busybox
+    else
+    echo "Error!"
+    echo "Unable to detect correct architecture!"
+    echo
+    exit 1
+    echo
+  fi
+  
+fi
+
+echo "Moving BusyBox to /usr/local/bin"
+mkdir -p /usr/local/bin
+mv busybox /usr/local/bin/busybox
+chmod a+x /usr/local/bin/busybox
+
+}
+
+download_supersu() {
+
+echo "Downloading SuperSU-v2.82-SR3"
+mkdir -p /tmp/aroc
+cd /tmp/aroc
+wget https://download.chainfire.eu/1122/SuperSU/SR3-SuperSU-v2.82-SR3-20170813133244.zip?retrieve_file=1 -O SuperSU.zip
+
+# Check filesize
+supersu_size=$(stat -c %s /tmp/aroc/SuperSU.zip)
+
+if [ $supersu_size = 6918737 ]; then
+  echo "Unzipping SuperSU zip, and copying required directories to ~/Downloads."
+  /usr/local/bin/busybox unzip SuperSU.zip
+  else
+  echo "Unexpected file size. Trying again..."
+  wget https://download.chainfire.eu/1122/SuperSU/SR3-SuperSU-v2.82-SR3-20170813133244.zip?retrieve_file=1 -O SuperSU.zip
+fi
+
+# Check filesize again...
+supersu_size=$(stat -c %s /tmp/aroc/SuperSU.zip)
+
+if [ $supersu_size = 6918737 ]; then
+  echo "Unzipping SuperSU zip, and copying required directories to ~/Downloads."
+  /usr/local/bin/busybox unzip SuperSU.zip
+  else
+  echo "Unexpected file size again! You can manually download the SuperSU zip and extract its directories to ~/Downloads. Then run this script again."
+  exit 1
+fi
+
+# Copy the required files over to ~/Downloads
+
+cp -r -a common /home/chronos/user/Downloads
+  
+if [ $ANDROID_ARCH=armv7 ]; then
+  cp -r -a armv7 /home/chronos/user/Downloads
+  else
+    
+  if [ $ANDROID_ARCH=x86 ]; then
+    cp -r -a x86 /home/chronos/user/Downloads
+    else
+    echo "Error!"
+    echo "Unable to detect correct architecture!"
+    echo
+    exit 1
+    echo
+  fi
+  
+fi
+
+}
+
+copy_su_armv7_temp() {
+  
+echo "Copying su to /opt/google/containers/android/rootfs/android-data/data/adb/su/bin/su, and setting permissions and contexts"
+
+cd $system/bin
+
+  cp $SU_ARCHDIR/su $system/bin/su
+  cp $SU_ARCHDIR/su $system/bin/daemonsu
+  cp $SU_ARCHDIR/su $system/bin/sugote
+
+  chmod 0755 $system/bin/su
+  chmod 0755 $system/bin/daemonsu
+  chmod 0755 $system/bin/sugote
+  
+  chown 655360 $system/bin/su
+  chown 655360 $system/bin/daemonsu
+  chown 655360 $system/bin/sugote
+  
+  chgrp 655360 $system/bin/su
+  chgrp 655360 $system/bin/daemonsu
+  chgrp 655360 $system/bin/sugote
+
+  chcon u:object_r:system_file:s0 $system/bin/su
+  chcon u:object_r:system_file:s0 $system/bin/daemonsu
+  chcon u:object_r:zygote_exec:s0 $system/bin/sugote
+  
+}
+
+copy_su_x86_temp() {
+
+echo "Copying su to /opt/google/containers/android/rootfs/android-data/data/adb/su/xbin/su, and setting permissions and contexts"
+
+cd $system/bin
+
+  cp $SU_ARCHDIR/su.pie $system/bin/su
+  cp $SU_ARCHDIR/su.pie $system/bin/daemonsu
+  cp $SU_ARCHDIR/su.pie $system/bin/sugote
+
+  chmod 0755 $system/bin/su
+  chmod 0755 $system/bin/daemonsu
+  chmod 0755 $system/bin/sugote
+  
+  chown 655360 $system/bin/su
+  chown 655360 $system/bin/daemonsu
+  chown 655360 $system/bin/sugote
+  
+  chgrp 655360 $system/bin/su
+  chgrp 655360 $system/bin/daemonsu
+  chgrp 655360 $system/bin/sugote
+
+  chcon u:object_r:system_file:s0 $system/bin/su
+  chcon u:object_r:system_file:s0 $system/bin/daemonsu
+  chcon u:object_r:zygote_exec:s0 $system/bin/sugote
+
+}
+
+# Check if the SuperSU 'common directory' is already present in ~/Downloads. If it doesn't, we will try to download it (and unzip it with BusyBox).
+if [ ! -e /home/chronos/user/Downloads/common ]; then
+  echo "SuperSU files not found in ~/Downloads! Attempting to download BusyBox and SuperSU now..."
+  mkdir -p /tmp/aroc
+  cd /tmp/aroc
+  
+  download_busybox
+  download_supersu
+  
+fi
+
+echo "Creating temporary directory /opt/google/containers/android/rootfs/android-data/data/adb/su and subdirs"
+
+mkdir -p /opt/google/containers/android/rootfs/android-data/data/adb/su
+mkdir -p /opt/google/containers/android/rootfs/android-data/data/adb/su/bin
+mkdir -p /opt/google/containers/android/rootfs/android-data/data/adb/su/lib
+mkdir -p /opt/google/containers/android/rootfs/android-data/data/adb/su/xbin
+
+setenforce 0
+
+#echo "Copying contents of existing /system/xbin and /system/lib"
+
+echo "Copying contents of existing Android /sbin to /su"
+
+cp -a -r /opt/google/containers/android/rootfs/root/system/lib/. /opt/google/containers/android/rootfs/android-data/data/adb/su/lib/.
+#cp -a -r /opt/google/containers/android/rootfs/root/system/xbin/. /opt/google/containers/android/rootfs/android-data/data/adb/su/xbin/.
+
+cp -a -r /opt/google/containers/android/rootfs/root/sbin/. /opt/google/containers/android/rootfs/android-data/data/adb/su/.
+
+# Set the right directory from which to copy the su binary.
+
+case "$ANDROID_ARCH" in
+armv7)
+SU_ARCHDIR=/home/chronos/user/Downloads/armv7
+;;
+esac
+
+case "$ANDROID_ARCH" in
+x86)
+SU_ARCHDIR=/home/chronos/user/Downloads/x86
+;;
+esac
+
+# In case the above doesn't exist, try to download it.
+
+if [ ! -e $SU_ARCHDIR ]; then
+  download_busybox
+  download_supersu
+fi
+
+common=/home/chronos/user/Downloads/common
+system=/opt/google/containers/android/rootfs/android-data/data/adb/su
+
+# For arm Chromebooks we need /armv7/su, but for for Intel Chromebooks we need /x86/su.pie
+
+case "$ANDROID_ARCH" in
+armv7)
+copy_su_armv7_temp
+;;
+esac
+
+case "$ANDROID_ARCH" in
+x86)
+copy_su_x86_temp
+;;
+esac
+
+echo "Copying supolicy to su/xbin, libsupol to su/lib and setting permissions and contexts"
+
+cd $system/bin
+
+  cp $SU_ARCHDIR/supolicy $system/bin/supolicy
+
+  chmod 0755 $system/bin/supolicy
+  chown 655360 $system/bin/supolicy
+  chgrp 655360 $system/bin/supolicy
+  chcon u:object_r:system_file:s0 $system/bin/supolicy
+
+cd $system/lib
+
+  cp $SU_ARCHDIR/libsupol.so $system/lib/libsupol.so
+
+  chmod 0644 $system/lib/libsupol.so
+  chown 655360 $system/lib/libsupol.so
+  chgrp 655360 $system/lib/libsupol.so
+  chcon u:object_r:system_file:s0 $system/lib/libsupol.so
+  
+#echo "Temporarily bind mounting su/xbin and su/lib within the Android container."
+
+echo "Temporarily bind mounting su/ to /sbin within the Android container."
+
+echo
+echo " Note that any Android apps currently running may stop working now and may not function correctly until this script has completed and the system has been rebooted."
+
+printf "mount -o bind /data/adb/su/bin /sbin " | android-sh
+printf "mount -o bind /data/adb/su/lib /system/lib"  | android-sh
+
+if [ ! -e /opt/google/containers/android/rootfs/android-data/data/adb/su/bin/su ]; then
+  echo
+  echo
+  echo "Checking for the presence of SuperSU..."
+  sleep 1
+  echo
+  echo "Error!"
+  echo "SU binary not found! Unable to continue."
+  echo
+  echo "You may need to retry script 01Root.sh and check its output for any errors. If you ran script 01Root.sh without rebooting, you do need to reboot before running this script."
+  exit 1
+
+else
+  echo
+  if [ ! -e /etc/selinux/arc/policy/policy.30.old ]; then
+    echo "Copying original policy.30 to /etc/selinux/arc/policy/policy.30.old"
+    cp /etc/selinux/arc/policy/policy.30 /etc/selinux/arc/policy/policy.30.old
+  fi
+  if [ ! -e /usr/local/Backup/policy.30.old ]; then
+    mkdir -p /usr/local/Backup
+    echo "Copying original policy.30 to /usr/local/Backup/policy.30.old"
+    cp /etc/selinux/arc/policy/policy.30 /usr/local/Backup/policy.30.old
+  fi
+  
+  echo "Copying policy.30 to /home/chronos/user/Downloads/policy.30 to allow Android access to the file".
+
+  cp -a /etc/selinux/arc/policy/policy.30 /home/chronos/user/Downloads/policy.30
+  
+  echo
+  echo "Opening an Android shell and attempting to patch policy_30."
+  sleep 1
+  echo
+
+  printf 'su -c supolicy --file /var/run/arc/sdcard/default/emulated/0/Download/policy.30 /var/run/arc/sdcard/default/emulated/0/Download/policy.30_out --sdk=25 \n su -c "chmod 0644 /var/run/arc/sdcard/default/emulated/0/Download/policy.30_out"' | android-sh
+  
+  if [ -e /home/chronos/user/Downloads/policy.30_out ]; then
+    echo
+    echo "Overwriting policy.30"
+    echo "Copying patched policy from /home/chronos/user/Downloads/policy.30_out to /etc/selinux/arc/policy/policy.30"
+    cp -a /home/chronos/user/Downloads/policy.30_out /etc/selinux/arc/policy/policy.30
+    
+
+    sleep 1
+    echo "SE Linux policy patching completed!"
+    echo "Removing temporary directory /opt/google/containers/android/rootfs/android-data/data/adb/su"
+    echo "Rebooting the Android container"
+    printf "reboot" | android-sh 2>/dev/null
+    else
+    echo
+    echo "Error!"
+    echo "Patched SE policy file not found! Unable to complete the procedure."
+    echo
+    echo "You may need to try running the separate patching script after a reboot."
+    exit 1
+  fi
+
+fi
+
+
+echo
+echo "Copying Android /sepolicy to /usr/local/Backup/sepolicy.old"
+cp -a /usr/local/Android_Images/Mounted/sepolicy /usr/local/Backup/sepolicy.old
+echo "Overwriting Android /sepolicy with patched policy.30"
+cp -a /home/chronos/user/Downloads/policy.30_out /usr/local/Android_Images/Mounted/sepolicy
+echo "Setting permissions and context for /sepolicy"
+chown 655360  /usr/local/Android_Images/Mounted/sepolicy
+chgrp 655360  /usr/local/Android_Images/Mounted/sepolicy
+chcon  u:object_r:rootfs:s0 /usr/local/Android_Images/Mounted/sepolicy
+
+echo "Done!"
+
+}
+
+# Main functions:
+
+check_if_root() {
+
+if [ $(id -u) != 0 ]; then
+  echo
+  echo "Error!"
+  echo "This script should be run as root."
+  exit 1
+fi
+
+}
+
+check_writeable_rootfs() {
+# TODO: Find a better way to do this, maybe
+touch "/.this"  2> /dev/null
+
+if [ ! -e /.this ]; then
+  echo
+  echo "Error!"
+  echo "Unable to modify system!"
+  echo
+  echo "Please retry the "remove_rootfs_verification" command above. (then reboot)"
+  exit 1
+fi
+
+rm /.this
+
+}
+
+detect_architecture() {
+  
+# TODO: Test/improve this function
+
+#if [ -z "$ANDROID_ARCH" ]; then
+    ARCH="`uname -m`"
+#fi
+case "$ARCH" in
+x86 | i?86) ANDROID_ARCH="x86";;
+x86_64 | amd64) ANDROID_ARCH="x86";;
+armel) ANDROID_ARCH="armel";;
+arm64 | aarch64) ANDROID_ARCH="armv7";;
+arm*) ANDROID_ARCH="armv7";;
+*) error 2 "Invalid architecture '$ARCH'.";;
+esac
+
+}
+
+modify_cros_files() {
+  
+# Just changing two environment variables for Android in /etc/init here.
+# Recent versions of CrOS have Android envs in arc-setup-env.
+# Older versions had envs in the .conf files
+
+mkdir -p /usr/local/Backup
+
+if [ -e /etc/init/arc-setup-env ]; then
+  echo "Copying /etc/init/arc-setup-env to /usr/local/Backup"
+  
+  sleep 1
+
+  echo "Setting 'export WRITABLE_MOUNT=1', 'export ANDROID_DEBUGGABLE=1' and 'export SHARE_FONTS=0' in /etc/init/arc-setup-env"
+  
+  sed -i 's/export WRITABLE_MOUNT=0/export WRITABLE_MOUNT=1/g' /etc/init/arc-setup-env 2>/dev/null
+  sed -i 's/export ANDROID_DEBUGGABLE=0/export ANDROID_DEBUGGABLE=1/g' /etc/init/arc-setup-env 2>/dev/null
+  sed -i 's/export SHARE_FONTS=1/export SHARE_FONTS=0/g' /etc/init/arc-setup-env 2>/dev/null
+
+else
+  echo "Copying /etc/init/arc-setup.conf and /etc/init/arc-system-mount.conf to /usr/local/Backup"
+
+  sleep 1
+
+  echo "Setting 'env WRITABLE_MOUNT=1' in /etc/init/arc-setup.conf and /etc/init/arc-system-mount.conf"
+
+  cp -a /etc/init/arc-system-mount.conf /usr/local/Backup/arc-system-mount.conf.old
+  cp -a /etc/init/arc-system-mount.conf /etc/init/arc-system-mount.conf.old
+
+  cp -a /etc/init/arc-setup.conf /usr/local/Backup/arc-setup.conf.old
+  cp -a /etc/init/arc-setup.conf /etc/init/arc-setup.conf.old
+  
+  sed -i 's/env WRITABLE_MOUNT=0/env WRITABLE_MOUNT=1/g' /etc/init/arc-setup.conf
+  sed -i 's/env WRITABLE_MOUNT=0/env WRITABLE_MOUNT=1/g' /etc/init/arc-system-mount.conf
+
+  echo "Setting 'env ANDROID_DEBUGGABLE=1' in arc-setup.conf"
+
+  sed -i 's/env ANDROID_DEBUGGABLE=0/env ANDROID_DEBUGGABLE=1/g' /etc/init/arc-setup.conf
+fi
+
+}
+
+create_image() {
+
+# Creates a blank ext4 image.
+
+# Make some working directories if they don't already exist.
+
+mkdir -p /usr/local/Android_Images
+mkdir -p /usr/local/Android_Images/Mounted
+mkdir -p /usr/local/Android_Images/Original
+
+echo "Creating new Android system image at /usr/local/Android_Images/system.raw.expanded.img"
+echo
+echo
+
+# Make the image.
+# For arm, the unsquashed image needs to be at least~ 1GB (~800MB for Marshmallow).
+# For x86, the unsquashed image needs to be at least ~1.4GB (~1GB for Marshmallow).
+
+if [ $ANDROID_ARCH=armv7 ]; then
+  cd /usr/local/Android_Images
+  dd if=/dev/zero of=system.raw.expanded.img count=1080000 bs=1024 status=progress
+  else
+  
+  if [ $ANDROID_ARCH=x86 ]; then
+    cd /usr/local/Android_Images
+    dd if=/dev/zero of=system.raw.expanded.img count=1444000 bs=1024 status=progress
+  
+    else
+    echo "Error!"
+    echo "Unable to detect correct architecture!"
+    echo
+    exit 1
+  fi
+
+fi
+echo
+echo "Formatting system.raw.expanded.img as ext4 filesystem"
+echo
+
+  mkfs ext4 -F /usr/local/Android_Images/system.raw.expanded.img
+
+}
+
+download_busybox () {
+  
+# Since there doesn't appear to be a built-in zip uncompresser available on the command line, if we need to download SuperSU,
+# we download BusyBox in order to unzip it. We could also install BusyBox in Android w/ its symlinks later, if we want.
+
+echo "Downloading BusyBox"
+mkdir -p /tmp/aroc
+cd /tmp/aroc
+
+if [ $ANDROID_ARCH=armv7 ]; then
+  wget https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-armv6l -O busybox
+  else
+  
+  if [ ANDROID_ARCH=x86 ]; then
+    wget https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-x86_64 -O busybox
+    else
+    echo "Error!"
+    echo "Unable to detect correct architecture!"
+    echo
+    exit 1
+    echo
+  fi
+  
+fi
+
+echo "Moving BusyBox to /usr/local/bin"
+mkdir -p /usr/local/bin
+mv busybox /usr/local/bin/busybox
+chmod a+x /usr/local/bin/busybox
+
+}
+
+download_supersu() {
+
+echo "Downloading SuperSU-v2.82-SR3"
+mkdir -p /tmp/aroc
+cd /tmp/aroc
+wget https://download.chainfire.eu/1122/SuperSU/SR3-SuperSU-v2.82-SR3-20170813133244.zip?retrieve_file=1 -O SuperSU.zip
+
+# Check filesize
+supersu_size=$(stat -c %s /tmp/aroc/SuperSU.zip)
+
+if [ $supersu_size = 6918737 ]; then
+  echo "Unzipping SuperSU zip, and copying required directories to ~/Downloads."
+  /usr/local/bin/busybox unzip SuperSU.zip
+  else
+  echo "Unexpected file size. Trying again..."
+  wget https://download.chainfire.eu/1122/SuperSU/SR3-SuperSU-v2.82-SR3-20170813133244.zip?retrieve_file=1 -O SuperSU.zip
+fi
+
+# Check filesize again...
+supersu_size=$(stat -c %s /tmp/aroc/SuperSU.zip)
+
+if [ $supersu_size = 6918737 ]; then
+  echo "Unzipping SuperSU zip, and copying required directories to ~/Downloads."
+  /usr/local/bin/busybox unzip SuperSU.zip
+  else
+  echo "Unexpected file size again! You can manually download the SuperSU zip and extract its directories to ~/Downloads. Then run this script again."
+  exit 1
+fi
+
+# Copy the required files over to ~/Downloads
+
+cp -r -a common /home/chronos/user/Downloads
+  
+if [ $ANDROID_ARCH=armv7 ]; then
+  cp -r -a armv7 /home/chronos/user/Downloads
+  else
+    
+  if [ $ANDROID_ARCH=x86 ]; then
+    cp -r -a x86 /home/chronos/user/Downloads
+    else
+    echo "Error!"
+    echo "Unable to detect correct architecture!"
+    echo
+    exit 1
+    echo
+  fi
+  
+fi
+
+}
+
+# The following two functions simply copy the architecture-dependent su binary to /system.
+# For arm Chromebooks we need /armv7/su, but for Intel Chromebooks we need /x86/su.pie
+
+copy_su_armv7() {
+  
+echo "Copying su to system/xbin/su,daemonsu,sugote, and setting permissions and contexts"
+
+cd $system/xbin
+
+  cp $SU_ARCHDIR/su $system/xbin/su
+  cp $SU_ARCHDIR/su $system/xbin/daemonsu
+  cp $SU_ARCHDIR/su $system/xbin/sugote
+
+  chmod 0755 $system/xbin/su
+  chmod 0755 $system/xbin/daemonsu
+  chmod 0755 $system/xbin/sugote
+  
+  chown 655360 $system/xbin/su
+  chown 655360 $system/xbin/daemonsu
+  chown 655360 $system/xbin/sugote
+  
+  chgrp 655360 $system/xbin/su
+  chgrp 655360 $system/xbin/daemonsu
+  chgrp 655360 $system/xbin/sugote
+
+  chcon u:object_r:system_file:s0 $system/xbin/su
+  chcon u:object_r:system_file:s0 $system/xbin/daemonsu
+  chcon u:object_r:zygote_exec:s0 $system/xbin/sugote
+
+sleep 1
+
+echo "Creating directory system/bin/.ext/.su"
+
+cd $system/bin
+
+  mkdir -p $system/bin/.ext
+
+echo "Copying su to system/bin/.ext/.su and setting permissions and contexts"
+
+cd $system/bin/.ext
+
+  cp $SU_ARCHDIR/su $system/bin/.ext/.su
+  chmod 0755 $system/bin/.ext/.su
+  chcon u:object_r:system_file:s0 $system/bin/.ext/.su
+  chown 655360 $system/bin/.ext/.su
+  chgrp 655360 $system/bin/.ext/.su
+
+}
+
+copy_su_x86() {
+
+echo "Copying su to system/xbin/su,daemonsu,sugote, and setting permissions and contexts"
+
+cd $system/xbin
+
+  cp $SU_ARCHDIR/su.pie $system/xbin/su
+  cp $SU_ARCHDIR/su.pie $system/xbin/daemonsu
+  cp $SU_ARCHDIR/su.pie $system/xbin/sugote
+
+  chmod 0755 $system/xbin/su
+  chmod 0755 $system/xbin/daemonsu
+  chmod 0755 $system/xbin/sugote
+  
+  chown 655360 $system/xbin/su
+  chown 655360 $system/xbin/daemonsu
+  chown 655360 $system/xbin/sugote
+  
+  chgrp 655360 $system/xbin/su
+  chgrp 655360 $system/xbin/daemonsu
+  chgrp 655360 $system/xbin/sugote
+
+  chcon u:object_r:system_file:s0 $system/xbin/su
+  chcon u:object_r:system_file:s0 $system/xbin/daemonsu
+  chcon u:object_r:zygote_exec:s0 $system/xbin/sugote
+
+sleep 1
+
+echo "Creating directory system/bin/.ext/.su"
+
+cd $system/bin
+
+  mkdir -p $system/bin/.ext
+
+echo "Copying su to system/bin/.ext/.su and setting permissions and contexts"
+
+cd $system/bin/.ext
+
+  cp $SU_ARCHDIR/su.pie $system/bin/.ext/.su
+  chmod 0755 $system/bin/.ext/.su
+  chcon u:object_r:system_file:s0 $system/bin/.ext/.su
+  chown 655360 $system/bin/.ext/.su
+  chgrp 655360 $system/bin/.ext/.su
+
+}
+
+# Functions end
+
+main() {
+
+check_if_root
+
+echo "Test Rooting scripts for Android on Chrome OS"
+sleep 0.2
+echo
+echo
+echo "Version 0.24"
+sleep 0.2
+echo
+echo "Unofficial scripts to copy SuperSU files to an Android system image on Chrome OS"
+sleep 0.2
+echo
+sleep 1
+echo
+echo "In order to modify system files, the Chrome OS system partition needs to have been mounted writeable."
+echo "If you haven't already disabled rootfs verification, you will need to do so before proceeding with this script."
+echo
+echo "You should be able to disable rootfs verification by running the following command, then rebooting."
+echo
+echo
+echo
+echo
+echo "sudo /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification --partitions $(( $(rootdev -s | sed -r 's/.*(.)$/\1/') - 1))"
+sleep 1
+echo
+echo
+echo
+echo
+echo "Alternatively, run the command below, then follow the prompt."
+echo
+echo
+echo "sudo /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification"
+sleep 1
+echo
+echo
+echo "Press Ctrl+C to cancel if you still need to do the above."
+sleep 2
+echo
+echo "Be aware that modifying the system partition could cause automatic updates to fail, may result in having to powerwash or restore from USB potentially causing loss of data! Please make sure important files are backed up."
+echo
+echo
+check_writeable_rootfs
+
+# Remount the Chrome OS root drive as writeable
+
+mount -o remount,rw / 2> /dev/null
+
+# Modify the two/three envs in /etc/init
+
+modify_cros_files
+
+# Make a new writeable Android rootfs image, symlink it in place of the original, and copy our files to it.
+
+# First, check if symlink already exists.
+
+if [ -L /opt/google/containers/android/system.raw.img ]; then
+  echo "The file at /opt/google/containers/android/system.raw.img is already a symlink!"
+
+# If the file is already a symlink, we need to check if a backup of the original system.raw.img exists.
+
+  if [ ! -f /home/chronos/user/Downloads/system.raw.img ]; then
+  
+    if [ ! -f /opt/google/containers/android/system.raw.img.bk ]; then
+      echo
+      echo "Error!"
+      echo "System.raw.img not found"
+      echo
+      exit 1
+    fi
+      
+  fi
+  
+  echo "Removing symlink"
+  rm -rf /opt/google/containers/android/system.raw.img
+fi
+  
+if [ ! -e /opt/google/containers/android/system.raw.img ]; then
+
+  if [ -f /opt/google/containers/android/system.raw.img.bk ]; then
+    echo "Using /opt/google/containers/android/system.raw.img.bk"
+  else
+  
+    if [ -f /home/chronos/user/Downloads/system.raw.img ]; then
+      echo "Using /home/chronos/user/Downloads/system.raw.img"
+    else
+      echo
+      echo "Error!"
+      echo "System.raw.img not found"
+      echo
+      exit 1
+    fi
+
+  fi
+
+fi
+
+# Unmount any previous instances
+
+umount -l /usr/local/Android_Images/system.raw.expanded.img 2>/dev/null
+umount -l /usr/local/Android_Images/system.raw.expanded.img 2>/dev/null
+umount -l /usr/local/Android_Images/Original 2>/dev/null
+umount -l /usr/local/Android_Images/Mounted 2>/dev/null
+
+detect_architecture
+
+create_image
+
+echo "Mounting system.raw.expanded.img"
+
+if [ -e /opt/google/containers/android/system.raw.img ]; then
+    
+  if [ -L /opt/google/containers/android/system.raw.img ]; then
+    
+    if [ -e /opt/google/containers/android/system.raw.img.bk ]; then
+      umount -l /usr/local/Android_Images/Original 2>/dev/null
+      mount -o loop,rw,sync /opt/google/containers/android/system.raw.img.bk /usr/local/Android_Images/Original 2>/dev/null
+    else
+  
+      if [ -e /home/chronos/user/Downloads/system.raw.img ]; then
+        umount -l /usr/local/Android_Images/Original 2>/dev/null
+        mount -o loop,rw,sync /home/chronos/user/Downloads/system.raw.img /usr/local/Android_Images/Original 2>/dev/null
+      else
+        echo
+        echo "Error!"
+        echo "System.raw.img not found"
+        echo
+        exit 1
+      fi
+        
+    fi
+    
+  fi
+    
+fi
+  
+if [ ! -L /opt/google/containers/android/system.raw.img ]; then
+
+  if [ -e /opt/google/containers/android/system.raw.img ]; then
+    umount -l /usr/local/Android_Images/Original 2>/dev/null
+    mount -o loop,rw,sync /opt/google/containers/android/system.raw.img /usr/local/Android_Images/Original 2>/dev/null
+  else
+  
+    if [ -e /opt/google/containers/android/system.raw.img.bk ]; then
+      umount -l /usr/local/Android_Images/Original 2>/dev/null
+      mount -o loop,rw,sync /opt/google/containers/android/system.raw.img.bk /usr/local/Android_Images/Original 2>/dev/null
+    else
+      
+      if [ -e /home/chronos/user/Downloads/system.raw.img ]; then
+        echo "Mounting /home/chronos/user/Downloads/system.raw.img and copying files"
+        umount -l /usr/local/Android_Images/Original 2>/dev/null
+        mount -o loop,rw,sync /home/chronos/user/Downloads/system.raw.img /usr/local/Android_Images/Original 2>/dev/null
+      else
+        echo
+        echo "Error!"
+        echo "System.raw.img not found"
+        echo
+        exit 1
+      fi
+      
+    fi
+      
+  fi
+    
+fi
+        #ORIGINAL_ANDROID_ROOTFS=/opt/google/containers/android/rootfs/root
+        ANDROID_ROOTFS=/usr/local/Android_Images/Original
+
+# We want to set SELinux to 'Permissive' so we can copy rootfs files with their original contexts without encountering errors.
+# At one point, the ability to 'setenforce' was removed in an OS update. (it was later restored in another update).
+
+setenforce 0
+
+# Check if it worked
+
+SE=$(getenforce)
+if SE="Permissive"
+then
+
+echo "SELinux successfully set to 'Permissive' temporarily"
+
+echo "Copying Android system files"
+
+mount -o loop,rw,sync /usr/local/Android_Images/system.raw.expanded.img /usr/local/Android_Images/Mounted
+
+cp -a -r $ANDROID_ROOTFS/. /usr/local/Android_Images/Mounted
+
+else
+
+# In case we can't set SE Linux to 'Permissive', the following is a workaround to copy files with correct contexts in 'Enforcing' mode.
+
+echo "Copying Android system files"
+
+# We should be able to copy files/dirs in 'Enforcing' mode by mounting with -o fscontext.
+# Directories mounted with special contexts:
+    
+          #u:object_r:cgroup:s0 acct
+          #u:object_r:device:s0 dev
+          #u:object_r:tmpfs:s0 mnt
+          #u:object_r:oemfs:s0 oem
+          #u:object_r:sysfs:s0 sys
+
+mount -o loop,rw,sync,fscontext=u:object_r:cgroup:s0 /usr/local/Android_Images/system.raw.expanded.img /usr/local/Android_Images/Mounted
+
+cp -a -r $ANDROID_ROOTFS/acct /usr/local/Android_Images/Mounted/acct
+
+umount -l /usr/local/Android_Images/Mounted
+
+mount -o loop,rw,sync,fscontext=u:object_r:device:s0 /usr/local/Android_Images/system.raw.expanded.img /usr/local/Android_Images/Mounted
+
+cp -a -r $ANDROID_ROOTFS/dev /usr/local/Android_Images/Mounted/dev
+
+umount -l /usr/local/Android_Images/Mounted
+
+mount -o loop,rw,sync,fscontext=u:object_r:tmpfs:s0 system.raw.expanded.img /usr/local/Android_Images/Mounted
+
+cp -a -r $ANDROID_ROOTFS/mnt /usr/local/Android_Images/Mounted/mnt
+
+umount -l /usr/local/Android_Images/Mounted
+
+mount -o loop,rw,sync,fscontext=u:object_r:oemfs:s0 /usr/local/Android_Images/system.raw.expanded.img /usr/local/Android_Images/Mounted
+
+cp -a -r $ANDROID_ROOTFS/oem /usr/local/Android_Images/Mounted/oem
+
+umount -l /usr/local/Android_Images/Mounted
+
+mount -o loop,rw,sync,fscontext=u:object_r:sysfs:s0 /usr/local/Android_Images/system.raw.expanded.img /usr/local/Android_Images/Mounted
+
+cp -a -r $ANDROID_ROOTFS/sys /usr/local/Android_Images/Mounted/sys
+
+umount -l /usr/local/Android_Images/Mounted
+
+mount -o loop,rw,sync /usr/local/Android_Images/system.raw.expanded.img /usr/local/Android_Images/Mounted
+
+cp -a -r $ANDROID_ROOTFS/storage /usr/local/Android_Images/Mounted/storage
+
+umount -l /usr/local/Android_Images/Mounted
+
+# Copying rootfs files
+
+mount -o loop,rw,sync,fscontext=u:object_r:rootfs:s0 /usr/local/Android_Images/system.raw.expanded.img /usr/local/Android_Images/Mounted
+
+cp -a -r $ANDROID_ROOTFS/. /usr/local/Android_Images/Mounted
+
+fi
+# If we were copying files from the original Android rootfs, unmount it now we've finished..
+if [  -f /opt/google/containers/android/system.raw.img ]; then
+  umount -l /opt/google/containers/android/system.raw.img  > /dev/null 2>&1 || /bin/true
+fi
+
+# Unmount the new rootfs too, so we can mount it again without special context later
+umount -l /usr/local/Android_Images/system.raw.expanded.img 2>/dev/null
+
+
+# If the original rootfs exists, before replacing it with a symlink, make a backup.
+# In the event of errors, re-running the script, or post-powerwash, the original may be restored by reversing the 'mv' command.
+# i.e. mv /opt/google/containers/android/system.raw.img.bk  /opt/google/containers/android/system.raw.img.
+
+if [ -e /opt/google/containers/android/system.raw.img ]; then
+
+  if [ ! -L /opt/google/containers/android/system.raw.img ]; then
+    echo "Moving original Android rootfs image to /opt/google/containers/android/system.raw.img.bk"
+    mv /opt/google/containers/android/system.raw.img  /opt/google/containers/android/system.raw.img.bk
+# Make the symlink from the original pathname to our writeable rootfs image
+    echo "Replacing original Android rootfs image path with symlink to /usr/local/Android_Images/system.raw.expanded.img"
+    ln  -s /usr/local/Android_Images/system.raw.expanded.img /opt/google/containers/android/system.raw.img
+  fi
+  
+  else
+  
+  if [ -e /usr/local/Android_Images/system.raw.expanded.img ]; then
+    echo "Creating symlink to /usr/local/Android_Images/system.raw.expanded.img at original Android rootfs image file path"
+    ln  -s /usr/local/Android_Images/system.raw.expanded.img /opt/google/containers/android/system.raw.img
+  fi
+  
+fi
+# Check if the SuperSU 'common directory' is already present in ~/Downloads. If it doesn't, we will try to download it (and unzip it with BusyBox).
+if [ ! -e /home/chronos/user/Downloads/common ]; then
+  echo "SuperSU files not found in ~/Downloads! Attempting to download BusyBox and SuperSU now..."
+  mkdir -p /tmp/aroc
+  cd /tmp/aroc
+  
+  download_busybox
+  download_supersu
+fi
+
+cd /usr/local/Android_Images
+mkdir -p /usr/local/Android_Images/Mounted
+
+# Mount our new Android rootfs
+
+mount -o loop,rw,sync /usr/local/Android_Images/system.raw.expanded.img /usr/local/Android_Images/Mounted 2>/dev/null
+
+# Set the right directory from which to copy the su binary.
+
+case "$ANDROID_ARCH" in
+armv7)
+SU_ARCHDIR=/home/chronos/user/Downloads/armv7
+;;
+esac
+
+case "$ANDROID_ARCH" in
+x86)
+SU_ARCHDIR=/home/chronos/user/Downloads/x86
+;;
+esac
+# In case the above doesn't exist, try to download it.
+
+if [ ! -e $SU_ARCHDIR ]; then
+  download_busybox
+  download_supersu
+fi
+              common=/home/chronos/user/Downloads/common
+              system=/usr/local/Android_Images/Mounted/system
+              #system_original=/opt/google/containers/android/rootfs/root/system
+
+# If we downloaded Busybox earlier, we may as well copy it to /system (although we don't need to for the purpose of this script).
+
+if [ -e /tmp/aroc/busybox ]; then
+  echo "Copying BusyBox to /system/xbin"
+  cp  /tmp/aroc/busybox $system/xbin
+  chown 655360 $system/xbin/busybox
+  chgrp 655360 $system/xbin/busybox
+  chmod a+x $system/xbin/busybox
+fi
+
+echo "Now placing SuperSU files. Locations as indicated by the SuperSU update-binary script."
+sleep 1
+echo
+
+# Copying SuperSU files to $system
+    
+echo "Creating SuperSU directory in system/priv-app, copying SuperSU apk, and setting its permissions and contexts"
+
+cd $system/priv-app
+  mkdir -p $system/priv-app/SuperSU
+  chown 655360 $system/priv-app/SuperSU
+  chgrp 655360 $system/priv-app/SuperSU
+  
+cd $system/priv-app/SuperSU
+  cp $common/Superuser.apk $system/priv-app/SuperSU/SuperSU.apk
+
+  chmod 0644 $system/priv-app/SuperSU/SuperSU.apk
+  chcon u:object_r:system_file:s0 $system/priv-app/SuperSU/SuperSU.apk
+  chown 655360 $system/priv-app/SuperSU/SuperSU.apk
+  chgrp 655360 $system/priv-app/SuperSU/SuperSU.apk
+
+sleep 1
+
+# For arm Chromebooks we need /armv7/su, but for for Intel Chromebooks we need /x86/su.pie
+
+case "$ANDROID_ARCH" in
+armv7)
+copy_su_armv7
+;;
+esac
+
+case "$ANDROID_ARCH" in
+x86)
+copy_su_x86
+;;
+esac
+
+echo "Copying supolicy to system/xbin, libsupol to system/lib and setting permissions and contexts"
+
+cd $system/xbin
+
+  cp $SU_ARCHDIR/supolicy $system/xbin/supolicy
+
+  chmod 0755 $system/xbin/supolicy
+  chown 655360 $system/xbin/supolicy
+  chgrp 655360 $system/xbin/supolicy
+  chcon u:object_r:system_file:s0 $system/xbin/supolicy
+
+cd $system/lib
+
+  cp $SU_ARCHDIR/libsupol.so $system/lib/libsupol.so
+
+  chmod 0644 $system/lib/libsupol.so
+  chown 655360 $system/lib/libsupol.so
+  chgrp 655360 $system/lib/libsupol.so
+  chcon u:object_r:system_file:s0 $system/lib/libsupol.so
+  
+sleep 1
+
+echo "Copying sh from system/bin/sh to system/xbin/sugote-mksh and setting permissions and contexts"
+
+cd $system/bin
+
+  cp $system/bin/sh ../xbin/sugote-mksh
+
+cd $system/xbin
+
+  chmod 0755 $system/xbin/sugote-mksh
+  chcon u:object_r:system_file:s0 $system/xbin/sugote-mksh
+  
+echo "Adding extra files system/etc/.installed_su_daemon and system/etc/install-recovery.sh"
+
+cd $system/etc
+
+  touch  $system/etc/.installed_su_daemon
+
+  chmod 0644  $system/etc/.installed_su_daemon
+  chcon u:object_r:system_file:s0  $system/etc/.installed_su_daemon
+
+  cp $common/install-recovery.sh  $system/etc/install-recovery.sh
+  
+  chmod 0755  $system/etc/install-recovery.sh
+  chown 655360 $system/etc/install-recovery.sh
+  chgrp 655360 $system/etc/install-recovery.sh
+  chcon u:object_r:toolbox_exec:s0  $system/etc/install-recovery.sh
+
+echo "Symlinking system/bin/install-recovery.sh to system/etc/install-recovery.sh"
+
+  ln -s -r install-recovery.sh ../bin/install-recovery.sh
+  
+echo "Adding system/bin/daemonsu-service.sh"
+
+cp $common/install-recovery.sh  $system/bin/daemonsu-service.sh
+  
+chmod 0755  $system/bin/daemonsu-service.sh
+chown 655360 $system/bin/daemonsu-service.sh
+chgrp 657360 $system/bin/daemonsu-service.sh
+
+chcon u:object_r:toolbox_exec:s0  $system/bin/daemonsu-service.sh
+
+echo "Creating file init.super.rc in Android rootfs"
+
+touch  $system/../init.super.rc
+
+chmod 0750 $system/../init.super.rc
+chown 655360 $system/../init.super.rc
+chgrp 657360 $system/../init.super.rc
+
+echo "Adding daemonsu service to init.super.rc"
+
+echo "service daemonsu /system/bin/daemonsu-service.sh service
+    class late_start
+    user root
+    seclabel u:r:supersu:s0
+    oneshot" >>  $system/../init.super.rc
+    
+echo "Adding 'import /init.super.rc' to existing init.rc"
+
+sed -i '7iimport /init.super.rc' $system/../init.rc
+
+# SuperSU copying script ends
+
+echo
+sleep 1
+
+echo "Removing temporary files"
+rm -rf /tmp/aroc
+
+
+echo ""
+echo "Now attempting to patch SE Linux."
+echo "If there is a problem with the next part of the script, run the separate patching script from GitHub after a reboot."
+  
+sepolicy_patch
+
+echo "Done!"
+echo
+echo "Please check the output of this script for any errors."
+echo 
+echo "You will need to reboot the Chromebook in order to properly re-mount the new rooted Android container."
+echo "Please do so now"
+
+}
+
+main "$@"
