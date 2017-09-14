@@ -80,7 +80,7 @@ else
   sed -i 's/env WRITABLE_MOUNT=0/env WRITABLE_MOUNT=1/g' /etc/init/arc-system-mount.conf
 
   echo "Setting 'env ANDROID_DEBUGGABLE=1' in arc-setup.conf"
-  
+
   sed -i 's/env ANDROID_DEBUGGABLE=0/env ANDROID_DEBUGGABLE=1/g' /etc/init/arc-setup.conf  
 fi
 
@@ -246,6 +246,14 @@ cd $system/xbin
   chmod 0755 $system/xbin/su
   chmod 0755 $system/xbin/daemonsu
   chmod 0755 $system/xbin/sugote
+  
+  chown 655360 $system/xbin/su
+  chown 655360 $system/xbin/daemonsu
+  chown 655360 $system/xbin/sugote
+  
+  chgrp 655360 $system/xbin/su
+  chgrp 655360 $system/xbin/daemonsu
+  chgrp 655360 $system/xbin/sugote
 
   chcon u:object_r:system_file:s0 $system/xbin/su
   chcon u:object_r:system_file:s0 $system/xbin/daemonsu
@@ -266,6 +274,10 @@ cd $system/bin/.ext
   cp $SU_ARCHDIR/su $system/bin/.ext/.su
   chmod 0755 $system/bin/.ext/.su
   chcon u:object_r:system_file:s0 $system/bin/.ext/.su
+  chown 655360 $system/bin/.ext/.su
+  chgrp 655360 $system/bin/.ext/.su
+
+
   
 sleep 1
 
@@ -284,6 +296,14 @@ cd $system/xbin
   chmod 0755 $system/xbin/su
   chmod 0755 $system/xbin/daemonsu
   chmod 0755 $system/xbin/sugote
+  
+  chown 655360 $system/xbin/su
+  chown 655360 $system/xbin/daemonsu
+  chown 655360 $system/xbin/sugote
+  
+  chgrp 655360 $system/xbin/su
+  chgrp 655360 $system/xbin/daemonsu
+  chgrp 655360 $system/xbin/sugote
 
   chcon u:object_r:system_file:s0 $system/xbin/su
   chcon u:object_r:system_file:s0 $system/xbin/daemonsu
@@ -304,6 +324,9 @@ cd $system/bin/.ext
   cp $SU_ARCHDIR/su.pie $system/bin/.ext/.su
   chmod 0755 $system/bin/.ext/.su
   chcon u:object_r:system_file:s0 $system/bin/.ext/.su
+  chown 655360 $system/bin/.ext/.su
+  chgrp 655360 $system/bin/.ext/.su
+
 
 }
 
@@ -643,6 +666,7 @@ if [ -e /tmp/aroc/busybox ]; then
   echo "Copying BusyBox to /system/xbin"
   cp  /tmp/aroc/busybox $system/xbin
   chown 655360 $system/xbin/busybox
+  chgrp 655360 $system/xbin/busybox
   chmod a+x $system/xbin/busybox
 fi
 
@@ -692,6 +716,8 @@ cd $system/xbin
   cp $SU_ARCHDIR/supolicy $system/xbin/supolicy
 
   chmod 0755 $system/xbin/supolicy
+  chown 655360 $system/xbin/supolicy
+  chgrp 655360 $system/xbin/supolicy
   chcon u:object_r:system_file:s0 $system/xbin/supolicy
 
 cd $system/lib
@@ -699,6 +725,8 @@ cd $system/lib
   cp $SU_ARCHDIR/libsupol.so $system/lib/libsupol.so
 
   chmod 0644 $system/lib/libsupol.so
+  chown 655360 $system/lib/libsupol.so
+  chgrp 655360 $system/lib/libsupol.so
   chcon u:object_r:system_file:s0 $system/lib/libsupol.so
   
 sleep 1
@@ -760,6 +788,8 @@ cd $system/etc
   cp $common/install-recovery.sh  $system/etc/install-recovery.sh
   
   chmod 0755  $system/etc/install-recovery.sh
+  chown 655360 $system/etc/install-recovery.sh
+  chgrp 655360 $system/etc/install-recovery.sh
   chcon u:object_r:toolbox_exec:s0  $system/etc/install-recovery.sh
 
 echo "Symlinking system/bin/install-recovery.sh to system/etc/install-recovery.sh"
