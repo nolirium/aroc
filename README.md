@@ -1,7 +1,7 @@
 # aroc
-Android Root on ChromeOS - a pair of Chrome OS shell scripts to make a R/W copy of the Android container and copy su therein.
+Android Root on ChromeOS - Chrome OS shell scripts to make a R/W copy of the Android container and copy su therein.
 
-#### Note: Issues have been encountered with running SuperSU on a couple of the recent Chrome OS versions, particularly on the Dev and Canary channels. Specifically, the version of CrOS on which su/the rooting procedure is known to definitely NOT work properly is v62 platform 9901. On most older CrOS versions, on v62 platform 9904+, and (so far) on v63, everything *should* work as expected.
+#### Note: Issues have been encountered with these scripts on a couple of recent Chrome OS builds on the Dev and Canary channels. In particular, the version of CrOS on which this rooting procedure is known to definitely NOT work properly is v62 platform 9901. On most older CrOS versions, on the newer v62 platform 9904+, and (so far) on v63, everything *should* work as expected.
 
 ### Prerequisites
 
@@ -38,11 +38,11 @@ Then open Play Store, Root Checker, Ad-Away, etc, etc.
 
 The scripts may either be downloaded and ran locally, or via curl e.g. 
 
-`curl -Ls https://raw.githubusercontent.com/nolirium/aroc/master/Test/01Root.sh | sudo sh`
+`curl -Ls https://raw.githubusercontent.com/nolirium/aroc/master/01Root.sh | sudo sh`
 
 Reboot
 
-`curl -Ls https://raw.githubusercontent.com/nolirium/aroc/master/Test/02SEPatch.sh | sudo sh`
+`curl -Ls https://raw.githubusercontent.com/nolirium/aroc/master/02SEPatch.sh | sudo sh`
 
 Reboot again
 
