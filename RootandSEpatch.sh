@@ -1080,15 +1080,11 @@ sleep 1
 
 echo "Removing temporary files"
 rm -rf /tmp/aroc
-
-
-echo ""
+echo
 echo "Now attempting to patch SE Linux."
 echo "If there is a problem with the next part of the script, run the separate patching script from GitHub after a reboot."
   
 sepolicy_patch
-
-echo "Done!"
 echo
 echo "Please check the output of this script for any errors."
 echo 
