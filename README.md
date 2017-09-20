@@ -24,7 +24,9 @@ Or:
 
 ### Instructions
 
-The scripts should be run, as root, in the following order:
+
+
+The scripts should be run in the Chrome OS shell, as root, in the following order:
 
 01Root.sh
 
@@ -38,11 +40,11 @@ Then open Play Store, Root Checker, Ad-Away, etc, etc.
 
 The scripts may either be downloaded and ran locally, or via curl e.g. 
 
-`curl -Ls https://raw.githubusercontent.com/nolirium/aroc/master/Test/01Root.sh | sudo sh`
+`curl -Ls https://raw.githubusercontent.com/nolirium/aroc/master/01Root.sh | sudo sh`
 
 Reboot
 
-`curl -Ls https://raw.githubusercontent.com/nolirium/aroc/master/Test/02SEPatch.sh | sudo sh`
+`curl -Ls https://raw.githubusercontent.com/nolirium/aroc/master/02SEPatch.sh | sudo sh`
 
 Reboot again
 
