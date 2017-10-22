@@ -284,7 +284,7 @@ else
 
     sleep 1
     echo "SE Linux policy patching completed!"
-    echo "Removing temporary directory /opt/google/containers/android/rootfs/android-data/data/adb/su"
+
     echo "Rebooting the Android container"
     printf "reboot" | android-sh 2>/dev/null
     else
@@ -293,6 +293,8 @@ else
     echo "Patched SE policy file not found! Unable to complete the procedure."
     echo
     echo "You may need to try running the separate patching script after a reboot."
+    echo "Removing temporary directory /opt/google/containers/android/rootfs/android-data/data/adb/su"
+    rm -rf /opt/google/containers/android/rootfs/android-data/data/adb/su
     exit 1
   fi
 
@@ -308,6 +310,8 @@ echo "Setting permissions and context for /sepolicy"
 chown 655360  /usr/local/Android_Images/Mounted/sepolicy
 chgrp 655360  /usr/local/Android_Images/Mounted/sepolicy
 chcon  u:object_r:rootfs:s0 /usr/local/Android_Images/Mounted/sepolicy
+echo "Removing temporary directory /opt/google/containers/android/rootfs/android-data/data/adb/su"
+rm -rf /opt/google/containers/android/rootfs/android-data/data/adb/su
 
 echo "Done!"
 
@@ -1078,7 +1082,7 @@ sed -i '7iimport /init.super.rc' $system/../init.rc
 echo
 sleep 1
 
-echo "Removing temporary files"
+echo "Removing temporary files and directory /tmp/aroc"
 rm -rf /tmp/aroc
 echo
 echo "Now attempting to patch SE Linux."
