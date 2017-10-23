@@ -164,13 +164,15 @@ mkdir -p /opt/google/containers/android/rootfs/android-data/data/adb/su/xbin
 setenforce 0
 
 #echo "Copying contents of existing /system/xbin and /system/lib"
+echo "Copying contents of existing Android /system/lib to /opt/google/containers/android/rootfs/android-data/data/adb/su/lib"
 
-echo "Copying contents of existing Android /sbin to /su"
 
 cp -a -r /opt/google/containers/android/rootfs/root/system/lib/. /opt/google/containers/android/rootfs/android-data/data/adb/su/lib/.
 #cp -a -r /opt/google/containers/android/rootfs/root/system/xbin/. /opt/google/containers/android/rootfs/android-data/data/adb/su/xbin/.
+echo "Copying contents of existing Android /sbin to /opt/google/containers/android/rootfs/android-data/data/adb/su/bin"
 
-cp -a -r /opt/google/containers/android/rootfs/root/sbin/. /opt/google/containers/android/rootfs/android-data/data/adb/su/.
+
+cp -a -r /opt/google/containers/android/rootfs/root/sbin/. /opt/google/containers/android/rootfs/android-data/data/adb/su/bin/.
 
 # Set the right directory from which to copy the su binary.
 
@@ -210,7 +212,7 @@ copy_su_x86_temp
 ;;
 esac
 
-echo "Copying supolicy to su/xbin, libsupol to su/lib and setting permissions and contexts"
+echo "Copying supolicy to su/bin, libsupol to su/lib and setting permissions and contexts"
 
 cd $system/bin
 
@@ -232,13 +234,13 @@ cd $system/lib
   
 #echo "Temporarily bind mounting su/xbin and su/lib within the Android container."
 
-echo "Temporarily bind mounting su/ to /sbin within the Android container."
+echo "Attempting to bind mount temp dir su/bin to /sbin within the Android container."
+printf "mount -o bind /data/adb/su/bin /sbin " | android-sh
+echo "Attempting to bind mount temp dir su/lib to /system/lib within the Android container."
+printf "mount -o bind /data/adb/su/lib /system/lib"  | android-sh
 
 echo
-echo " Note that any Android apps currently running may stop working now and may not function correctly until this script has completed and the system has been rebooted."
-
-printf "mount -o bind /data/adb/su/bin /sbin " | android-sh
-printf "mount -o bind /data/adb/su/lib /system/lib"  | android-sh
+echo "Any Android apps currently running may stop working now and may not function correctly until this script has completed and the system has been rebooted."
 
 if [ ! -e /opt/google/containers/android/rootfs/android-data/data/adb/su/bin/su ]; then
   echo
@@ -299,7 +301,6 @@ else
   fi
 
 fi
-
 
 echo
 echo "Copying Android /sepolicy to /usr/local/Backup/sepolicy.old"
