@@ -117,7 +117,7 @@ cd $system/bin
 
 copy_su_x86_temp() {
 
-echo "Copying su to /opt/google/containers/android/rootfs/android-data/data/adb/su/xbin/su, and setting permissions and contexts"
+echo "Copying su to /opt/google/containers/android/rootfs/android-data/data/adb/su/bin/su, and setting permissions and contexts"
 
 cd $system/bin
 
@@ -251,7 +251,6 @@ if [ ! -e /opt/google/containers/android/rootfs/android-data/data/adb/su/bin/su 
   echo "Error!"
   echo "SU binary not found! Unable to continue."
   echo
-  echo "You may need to retry script 01Root.sh and check its output for any errors. If you ran script 01Root.sh without rebooting, you do need to reboot before running this script."
   exit 1
 
 else
