@@ -157,11 +157,11 @@ mkdir -p /tmp/aroc
 cd /tmp/aroc
 
 if [ $ANDROID_ARCH=armv7 ]; then
-  wget https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-armv6l -O busybox
+  curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-armv6l -o busybox
   else
   
   if [ ANDROID_ARCH=x86 ]; then
-    wget https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-x86_64 -O busybox
+    curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-x86_64 -o busybox
     else
     echo "Error!"
     echo "Unable to detect correct architecture!"
@@ -184,7 +184,7 @@ download_supersu() {
 echo "Downloading SuperSU-v2.82-SR3"
 mkdir -p /tmp/aroc
 cd /tmp/aroc
-wget https://download.chainfire.eu/1122/SuperSU/SR3-SuperSU-v2.82-SR3-20170813133244.zip?retrieve_file=1 -O SuperSU.zip
+curl https://download.chainfire.eu/1122/SuperSU/SR3-SuperSU-v2.82-SR3-20170813133244.zip?retrieve_file=1 -o SuperSU.zip
 
 # Check filesize
 supersu_size=$(stat -c %s /tmp/aroc/SuperSU.zip)
@@ -194,7 +194,7 @@ if [ $supersu_size = 6918737 ]; then
   /usr/local/bin/busybox unzip SuperSU.zip
   else
   echo "Unexpected file size. Trying again..."
-  wget https://download.chainfire.eu/1122/SuperSU/SR3-SuperSU-v2.82-SR3-20170813133244.zip?retrieve_file=1 -O SuperSU.zip
+  curl https://download.chainfire.eu/1122/SuperSU/SR3-SuperSU-v2.82-SR3-20170813133244.zip?retrieve_file=1 -o SuperSU.zip
 fi
 
 # Check filesize again...
