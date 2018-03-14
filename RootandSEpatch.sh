@@ -427,12 +427,12 @@ echo
 
 if [ $ANDROID_ARCH=armv7 ]; then
   cd /usr/local/Android_Images
-  dd if=/dev/zero of=system.raw.expanded.img count=1090000 bs=1024 status=progress
+  dd if=/dev/zero of=system.raw.expanded.img count=1290000 bs=1024 status=progress
   else
   
   if [ $ANDROID_ARCH=x86 ]; then
     cd /usr/local/Android_Images
-    dd if=/dev/zero of=system.raw.expanded.img count=1464000 bs=1024 status=progress
+    dd if=/dev/zero of=system.raw.expanded.img count=1764000 bs=1024 status=progress
   
     else
     echo "Error!"
