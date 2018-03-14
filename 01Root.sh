@@ -119,17 +119,17 @@ echo
 echo
 
 # Make the image.
-# For arm, the unsquashed image needs to be at least~ 1GB (~800MB for Marshmallow).
+# For arm, the unsquashed image needs to be at least ~1GB (~800MB for Marshmallow).
 # For x86, the unsquashed image needs to be at least ~1.4GB (~1GB for Marshmallow).
 
 if [ $ANDROID_ARCH=armv7 ]; then
   cd /usr/local/Android_Images
-  dd if=/dev/zero of=system.raw.expanded.img count=1060000 bs=1024 status=progress
+  dd if=/dev/zero of=system.raw.expanded.img count=1260000 bs=1024 status=progress
   else
   
   if [ $ANDROID_ARCH=x86 ]; then
     cd /usr/local/Android_Images
-    dd if=/dev/zero of=system.raw.expanded.img count=1424000 bs=1024 status=progress
+    dd if=/dev/zero of=system.raw.expanded.img count=1724000 bs=1024 status=progress
   
     else
     echo "Error!"
