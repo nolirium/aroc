@@ -1,11 +1,11 @@
 # aroc
 Android Root on ChromeOS - Chrome OS shell scripts to make a R/W copy of the Android container and copy su therein.
 
-#### Note: Issues have been encountered with these scripts on a couple of recent Chrome OS builds on the Dev and Canary channels. In particular, the version of CrOS on which this rooting procedure is known to definitely NOT work properly is v62 platform 9901. On most older CrOS versions, on the newer v62 platform 9904+, and (so far) on v63, everything *should* work as expected.
+#### Note: The scripts have been tested on CrOS versions 54-67. Issues have been encountered with these scripts on a one or two older Chrome OS builds, but on most CrOS versions, everything *should* work as expected.
 
 ### Prerequisites
 
-A Chrome OS device which supports Android Apps, with storage space for a ~1GB file in /usr/local.
+A Chrome OS device which supports Android Apps, with storage space for a ~2GB file in /usr/local (The script currently creates a sparse file, max size 2GB, actual size will vary but should be somewhat smaller)
 
 The device must be in Developer Mode, and in addition, the Chrome OS system partition needs to have been made writeable (rootfs verification disabled).
 
@@ -50,7 +50,7 @@ Reboot again
 
 #### 01Root.sh
 
-Creates the directory /usr/local/Android_Images, formats a ~ 1GB ext4 filesystem image in /usr/local/Android_Images therein, and copies the files from the factory shipped squashfs Android rootfs image to the new, writeable, image. Modifies Chrome OS system files in /etc/init/- either arc-setup-env or arc-system-mount.conf and arc-setup.conf (as required) - changing the debuggable and mount-as-read-only flags. Renames the original filesystem image to .bk & replaces it with a symlink to the newly-created image. Mounts the freshly created writeable Android rootfs image, and copies SuperSU files to the mounted image as specified in the SuperSU update-binary (if the directories from within the SuperSU installer zip are not present in ~/Downloads, the script will attempt to download them).
+Creates the directory /usr/local/Android_Images, formats a ~ 2GB ext4 filesystem image in /usr/local/Android_Images therein, makes the image sparse, and copies the files from the factory shipped squashfs Android rootfs image to the new, writeable, image. Modifies Chrome OS system files in /etc/init/- either arc-setup-env or arc-system-mount.conf and arc-setup.conf (as required) - changing the debuggable and mount-as-read-only flags. Renames the original filesystem image to .bk & replaces it with a symlink to the newly-created image. Mounts the freshly created writeable Android rootfs image, and copies SuperSU files to the mounted image as specified in the SuperSU update-binary (if the directories from within the SuperSU installer zip are not present in ~/Downloads, the script will attempt to download them).
 
 
 #### 02SEpatch.sh
@@ -66,7 +66,7 @@ If a backup Android image is present in its original directory, attempts to remo
 
 ### Known issues
 
-##### IMPORTANT NOTE:  If you powerwash after running the scripts, the Play Store/Android apps will no longer work. The easiest way to fix it is to restore the original Android system image with the following command (then reboot) :
+##### IMPORTANT NOTE:  If you need to restore the original Android system image (for instance after a powerwash, or if the script didn't complete successfully), the easiest way to do this is to run the following command (then reboot) :
 
 `sudo mv /opt/google/containers/android/system.raw.img.bk /opt/google/containers/android/system.raw.img`
 
@@ -82,3 +82,5 @@ Further information: The current version of the script replaces the original And
 The modified system image takes up a fair amount of space in /usr/local. Storing the image in certain other places doesn't seem to work, probably due to mount/login timings.
 
 Updates to the OS may break the procedure, and at the least may necessitate redoing all or part of it. 
+
+On some older CrOS versions, certain non-English fonts may break after rooting. This should no longer occur on the latest OS version.
