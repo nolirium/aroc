@@ -1,8 +1,7 @@
 #!/bin/sh
 
 echo "Test Rooting scripts for Android on Chrome OS"
-sleep 0.5
-echo
+sleep 0.2
 echo
 echo "Version 0.23"
 sleep 0.2
@@ -54,7 +53,7 @@ mkdir -p /usr/local/Backup
 if [ -e /etc/init/arc-setup-env ]; then
   echo "Copying /etc/init/arc-setup-env to /usr/local/Backup"
   
-  sleep 1
+  sleep 0.2
 
   echo "Setting 'export WRITABLE_MOUNT=1', 'export ANDROID_DEBUGGABLE=1' and 'export SHARE_FONTS=0' in /etc/init/arc-setup-env"
   
@@ -66,7 +65,7 @@ if [ -e /etc/init/arc-setup-env ]; then
 else
   echo "Copying /etc/init/arc-setup.conf and /etc/init/arc-system-mount.conf to /usr/local/Backup"
 
-  sleep 1
+  sleep 0.2
 
   echo "Setting 'env WRITABLE_MOUNT=1' in /etc/init/arc-setup.conf and /etc/init/arc-system-mount.conf"
 
@@ -122,15 +121,17 @@ echo
 # For arm, the unsquashed image needs to be at least ~1GB (~800MB for Marshmallow).
 # For x86, the unsquashed image needs to be at least ~1.4GB (~1GB for Marshmallow).
 
+# Since the raw rootfs has increased in size lately, create a blank 2GB image, then make it sparse so it takes only as much space on disk as required.
+
 if [ $ANDROID_ARCH=armv7 ]; then
   cd /usr/local/Android_Images
-  dd if=/dev/zero of=system.raw.expanded.img count=1260000 bs=1024 status=progress
+  dd if=/dev/zero of=system.raw.expanded.img count=2000000 bs=1024 status=progress
   else
-  
+
   if [ $ANDROID_ARCH=x86 ]; then
     cd /usr/local/Android_Images
-    dd if=/dev/zero of=system.raw.expanded.img count=1724000 bs=1024 status=progress
-  
+    dd if=/dev/zero of=system.raw.expanded.img count=2000000 bs=1024 status=progress
+
     else
     echo "Error!"
     echo "Unable to detect correct architecture!"
@@ -143,7 +144,11 @@ echo
 echo "Formatting system.raw.expanded.img as ext4 filesystem"
 echo
 
-  mkfs ext4 -F /usr/local/Android_Images/system.raw.expanded.img
+mkfs ext4 -F /usr/local/Android_Images/system.raw.expanded.img
+
+echo "Converting system.raw.expanded.img to sparse image"
+
+fallocate -d /usr/local/Android_Images/system.raw.expanded.img
 
 }
 
@@ -259,7 +264,7 @@ cd $system/xbin
   chcon u:object_r:system_file:s0 $system/xbin/daemonsu
   chcon u:object_r:zygote_exec:s0 $system/xbin/sugote
 
-sleep 1
+sleep 0.2
 
 echo "Creating directory system/bin/.ext/.su"
 
@@ -277,9 +282,7 @@ cd $system/bin/.ext
   chown 655360 $system/bin/.ext/.su
   chgrp 655360 $system/bin/.ext/.su
 
-
-  
-sleep 1
+sleep 0.2
 
 }
 
@@ -309,7 +312,7 @@ cd $system/xbin
   chcon u:object_r:system_file:s0 $system/xbin/daemonsu
   chcon u:object_r:zygote_exec:s0 $system/xbin/sugote
 
-sleep 1
+sleep 0.2
 
 echo "Creating directory system/bin/.ext/.su"
 
@@ -345,7 +348,7 @@ echo
 echo
 echo
 echo "sudo /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification --partitions $(( $(rootdev -s | sed -r 's/.*(.)$/\1/') - 1))"
-sleep 1
+sleep 0.2
 echo
 echo
 echo
@@ -354,13 +357,13 @@ echo "Alternatively, run the command below, then follow the prompt."
 echo
 echo
 echo "sudo /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification"
-sleep 1
+sleep 0.2
 echo
 echo
 echo
 echo
 echo "Press Ctrl+C to cancel if you still need to do the above."
-sleep 3
+sleep 2
 echo
 echo "Be aware that modifying the system partition could cause automatic updates to fail, may result in having to powerwash or restore from USB potentially causing loss of data! Please make sure important files are backed up."
 echo
@@ -624,7 +627,7 @@ if [ ! -e /home/chronos/user/Downloads/common ]; then
   
 fi
 
-sleep 1
+sleep 0.2
 
 cd /usr/local/Android_Images
 mkdir -p /usr/local/Android_Images/Mounted
@@ -672,7 +675,7 @@ fi
 
 echo "Now placing SuperSU files. Locations as indicated by the SuperSU update-binary script."
 
-sleep 1
+sleep 0.2
 
 echo
 
@@ -693,7 +696,7 @@ cd $system/priv-app/SuperSU
   chown 655360 $system/priv-app/SuperSU/SuperSU.apk
   chgrp 655360 $system/priv-app/SuperSU/SuperSU.apk
 
-sleep 1
+sleep 0.2
 
 # For arm Chromebooks we need /armv7/su, but for for Intel Chromebooks we need /x86/su.pie
 
@@ -729,7 +732,7 @@ cd $system/lib
   chgrp 655360 $system/lib/libsupol.so
   chcon u:object_r:system_file:s0 $system/lib/libsupol.so
   
-sleep 1
+sleep 0.2
 
 echo "Copying sh from system/bin/sh to system/xbin/sugote-mksh and setting permissions and contexts"
 
@@ -835,7 +838,7 @@ echo "Done!"
 echo
 echo "Please check the output of this script for any errors."
 
-sleep 1
+sleep 0.2
 
 echo
 echo "Please reboot now, then run script 02SEPatch.sh."
