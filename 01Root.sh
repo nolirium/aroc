@@ -27,7 +27,9 @@ fi
 }
 
 check_writeable_rootfs() {
+
 # TODO: Find a better way to do this, maybe
+
 touch "/.this"  2> /dev/null
 
 if [ ! -e /.this ]; then
@@ -44,6 +46,7 @@ rm /.this
 }
 
 modify_cros_files() {
+
 # Just changing two environment variables for Android in /etc/init here.
 # Recent versions of CrOS have Android envs in arc-setup-env.
 # Older versions had envs in the .conf files
@@ -105,7 +108,7 @@ esac
 
 create_image() {
 
-# Creates a blank ext4 image.
+# Creates a blank ext4 image, formats and converts to sparse.
 
 # Make some working directories if they don't already exist.
 
@@ -236,7 +239,7 @@ fi
 }
 
 # The following two functions simply copy the architecture-dependent su binary to /system.
-# For arm Chromebooks we need /armv7/su, but for Intel Chromebooks we need /x86/su.pie
+# For arm Chromebooks we need /armv7/su, but for Intel Chromebooks we need /x86/su.pie 
 
 copy_su_armv7() {
   
