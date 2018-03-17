@@ -137,25 +137,27 @@ echo
 # For arm, the unsquashed image needs to be at least ~1.3GB (~800MB for Marshmallow).
 # For x86, the unsquashed image needs to be at least ~1.8GB (~1GB for Marshmallow).
 
-# Since the raw rootfs has increased in size lately, create a blank 2GB image, then make it sparse so it takes only as much space on disk as required.
+# Since the raw rootfs has increased in size lately, create a blank 2GB sparse image.
 
-if [ $ANDROID_ARCH=armv7 ]; then
-  cd /usr/local/Android_Images
-  dd if=/dev/zero of=system.raw.expanded.img count=2000000 bs=1024 status=progress
-  else
+#if [ $ANDROID_ARCH=armv7 ]; then
+#  cd /usr/local/Android_Images
+#  dd if=/dev/zero of=system.raw.expanded.img count=2000000 bs=1024 status=progress
+#  else
+#
+#  if [ $ANDROID_ARCH=x86 ]; then
+#    cd /usr/local/Android_Images
+#    dd if=/dev/zero of=system.raw.expanded.img count=2000000 bs=1024 status=progress
+#
+#    else
+#    echo "Error!"
+#    echo "Unable to detect correct architecture!"
+#    echo
+#    exit 1
+#  fi
+#
+#fi
 
-  if [ $ANDROID_ARCH=x86 ]; then
-    cd /usr/local/Android_Images
-    dd if=/dev/zero of=system.raw.expanded.img count=2000000 bs=1024 status=progress
-
-    else
-    echo "Error!"
-    echo "Unable to detect correct architecture!"
-    echo
-    exit 1
-  fi
-
-fi
+dd of=system.raw.expanded.img bs=1024 seek=2000000 count=0
 
 echo
 echo "Formatting system.raw.expanded.img as ext4 filesystem"
@@ -163,9 +165,9 @@ echo
 
 mkfs ext4 -F /usr/local/Android_Images/system.raw.expanded.img
 
-echo "Converting system.raw.expanded.img to sparse image"
+#echo "Converting system.raw.expanded.img to sparse image"
 
-fallocate -d /usr/local/Android_Images/system.raw.expanded.img
+#fallocate -d /usr/local/Android_Images/system.raw.expanded.img
 
 }
 
