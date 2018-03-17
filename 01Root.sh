@@ -1,18 +1,5 @@
 #!/bin/sh
 
-echo "Test Rooting scripts for Android on Chrome OS"
-sleep 0.2
-echo
-echo "Version 0.23"
-sleep 0.2
-echo
-echo "Unofficial scripts to copy SuperSU files to an Android system image on Chrome OS"
-sleep 0.2
-echo
-echo "Part 1 of 2"
-sleep 1
-echo
-
 # Functions:
 
 check_if_root() {
@@ -28,16 +15,42 @@ fi
 
 check_writeable_rootfs() {
 
-# TODO: Find a better way to do this, maybe
+# TODO: Find a better way to do this, maybe.
+
+# At present, we try and create a file on the CrOS rootfs to test if rootfs verification is disabled.
 
 touch "/.this"  2> /dev/null
+
+# If we couldn't create the file, rootfs verification likely is yet to be disabled.
 
 if [ ! -e /.this ]; then
   echo
   echo "Error!"
   echo "Unable to modify system!"
   echo
-  echo "Please retry the "remove_rootfs_verification" command above. (then reboot)"
+  echo
+  echo "In order to modify system files, the Chrome OS system partition needs to have been mounted writeable (i.e. rootfs verification disabled)."
+  echo
+  echo
+  echo "You can disable rootfs verification by running the following command, then rebooting."
+  echo
+  echo
+  echo
+  echo
+  echo "sudo /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification --partitions $(( $(rootdev -s | sed -r 's/.*(.)$/\1/') - 1))"
+  sleep 0.1
+  echo
+  echo
+  echo
+  echo
+  echo "Alternatively, run the command below, then follow the prompt."
+  echo
+  echo
+  echo "sudo /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification"
+  sleep 0.1
+  echo
+  echo
+  echo "Please run the "remove_rootfs_verification" command now, then reboot and run this script again."
   exit 1
 fi
 
@@ -47,7 +60,7 @@ rm /.this
 
 modify_cros_files() {
 
-# Just changing two environment variables for Android in /etc/init here.
+# Just changing two/three environment variables for Android in /etc/init here.
 # Recent versions of CrOS have Android envs in arc-setup-env.
 # Older versions had envs in the .conf files
 
@@ -56,19 +69,18 @@ mkdir -p /usr/local/Backup
 if [ -e /etc/init/arc-setup-env ]; then
   echo "Copying /etc/init/arc-setup-env to /usr/local/Backup"
   
-  sleep 0.2
+  sleep 0.1
 
-  echo "Setting 'export WRITABLE_MOUNT=1', 'export ANDROID_DEBUGGABLE=1' and 'export SHARE_FONTS=0' in /etc/init/arc-setup-env"
+  echo "Setting 'export WRITABLE_MOUNT=1', 'export ANDROID_DEBUGGABLE=1' and (if variable exists) 'export SHARE_FONTS=0' in /etc/init/arc-setup-env"
   
   sed -i 's/export WRITABLE_MOUNT=0/export WRITABLE_MOUNT=1/g' /etc/init/arc-setup-env 2>/dev/null
   sed -i 's/export ANDROID_DEBUGGABLE=0/export ANDROID_DEBUGGABLE=1/g' /etc/init/arc-setup-env 2>/dev/null
   sed -i 's/export SHARE_FONTS=1/export SHARE_FONTS=0/g' /etc/init/arc-setup-env 2>/dev/null
 
-
 else
   echo "Copying /etc/init/arc-setup.conf and /etc/init/arc-system-mount.conf to /usr/local/Backup"
 
-  sleep 0.2
+  sleep 0.1
 
   echo "Setting 'env WRITABLE_MOUNT=1' in /etc/init/arc-setup.conf and /etc/init/arc-system-mount.conf"
 
@@ -108,7 +120,7 @@ esac
 
 create_image() {
 
-# Creates a blank ext4 image, formats and converts to sparse.
+# This creates a blank ext4 image, formats and converts to sparse.
 
 # Make some working directories if they don't already exist.
 
@@ -121,8 +133,8 @@ echo
 echo
 
 # Make the image.
-# For arm, the unsquashed image needs to be at least ~1GB (~800MB for Marshmallow).
-# For x86, the unsquashed image needs to be at least ~1.4GB (~1GB for Marshmallow).
+# For arm, the unsquashed image needs to be at least ~1.3GB (~800MB for Marshmallow).
+# For x86, the unsquashed image needs to be at least ~1.8GB (~1GB for Marshmallow).
 
 # Since the raw rootfs has increased in size lately, create a blank 2GB image, then make it sparse so it takes only as much space on disk as required.
 
@@ -143,6 +155,7 @@ if [ $ANDROID_ARCH=armv7 ]; then
   fi
 
 fi
+
 echo
 echo "Formatting system.raw.expanded.img as ext4 filesystem"
 echo
@@ -195,6 +208,7 @@ cd /tmp/aroc
 curl https://download.chainfire.eu/1122/SuperSU/SR3-SuperSU-v2.82-SR3-20170813133244.zip?retrieve_file=1 -o SuperSU.zip
 
 # Check filesize
+
 supersu_size=$(stat -c %s /tmp/aroc/SuperSU.zip)
 
 if [ $supersu_size = 6918737 ]; then
@@ -206,6 +220,7 @@ if [ $supersu_size = 6918737 ]; then
 fi
 
 # Check filesize again...
+
 supersu_size=$(stat -c %s /tmp/aroc/SuperSU.zip)
 
 if [ $supersu_size = 6918737 ]; then
@@ -267,7 +282,7 @@ cd $system/xbin
   chcon u:object_r:system_file:s0 $system/xbin/daemonsu
   chcon u:object_r:zygote_exec:s0 $system/xbin/sugote
 
-sleep 0.2
+sleep 0.1
 
 echo "Creating directory system/bin/.ext/.su"
 
@@ -285,7 +300,7 @@ cd $system/bin/.ext
   chown 655360 $system/bin/.ext/.su
   chgrp 655360 $system/bin/.ext/.su
 
-sleep 0.2
+sleep 0.1
 
 }
 
@@ -315,7 +330,7 @@ cd $system/xbin
   chcon u:object_r:system_file:s0 $system/xbin/daemonsu
   chcon u:object_r:zygote_exec:s0 $system/xbin/sugote
 
-sleep 0.2
+sleep 0.1
 
 echo "Creating directory system/bin/.ext/.su"
 
@@ -333,7 +348,6 @@ cd $system/bin/.ext
   chown 655360 $system/bin/.ext/.su
   chgrp 655360 $system/bin/.ext/.su
 
-
 }
 
 # Functions end
@@ -342,35 +356,21 @@ main() {
 
 check_if_root
 
-echo "In order to modify system files, the Chrome OS system partition needs to have been mounted writeable."
-echo "If you haven't already disabled rootfs verification, you will need to do so before proceeding with this script."
+echo "Test Rooting scripts for Android on Chrome OS"
+sleep 0.1
 echo
-echo "You should be able to disable rootfs verification by running the following command, then rebooting."
+echo "Version 0.25"
+sleep 0.1
 echo
+echo "Unofficial scripts to copy SuperSU files to an Android system image on Chrome OS"
+sleep 0.1
 echo
+echo "Part 1 of 2"
+sleep 0.1
 echo
-echo
-echo "sudo /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification --partitions $(( $(rootdev -s | sed -r 's/.*(.)$/\1/') - 1))"
-sleep 0.2
-echo
-echo
-echo
-echo
-echo "Alternatively, run the command below, then follow the prompt."
-echo
-echo
-echo "sudo /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification"
-sleep 0.2
-echo
-echo
-echo
-echo
-echo "Press Ctrl+C to cancel if you still need to do the above."
-sleep 2
-echo
-echo "Be aware that modifying the system partition could cause automatic updates to fail, may result in having to powerwash or restore from USB potentially causing loss of data! Please make sure important files are backed up."
-echo
-echo
+
+echo "Be aware that modifying the system partition could cause automatic updates to fail (unlikely), may result in having to powerwash or restore from USB potentially causing loss of data! Please make sure important files are backed up."
+echo 
 
 # Remount the Chrome OS root drive as writeable
 
@@ -378,13 +378,13 @@ mount -o remount,rw / 2> /dev/null
 
 check_writeable_rootfs
 
-# Modify the two envs in /etc/init
+# Modify the two/three envs in /etc/init
 
 modify_cros_files
 
-# Next, we will make our new writeable Android rootfs image, symlink it in place of the original, and copy our files to it.
+# Make our new writeable Android rootfs image, symlink it in place of the original, and copy our files to it.
 
-# First check if symlink already exists
+# First, check if symlink already exists.
 
 if [ -L /opt/google/containers/android/system.raw.img ]; then
   echo "The file at /opt/google/containers/android/system.raw.img is already a symlink!"
@@ -412,7 +412,9 @@ if [ ! -e /opt/google/containers/android/system.raw.img ]; then
   if [ -f /opt/google/containers/android/system.raw.img.bk ]; then
     echo "Using /opt/google/containers/android/system.raw.img.bk"
   else
-  
+
+# In case the backup has been deleted from its usual place (e.g. to save space), check if one is present in ~/Downloads.
+
     if [ -f /home/chronos/user/Downloads/system.raw.img ]; then
       echo "Using /home/chronos/user/Downloads/system.raw.img"
     else
@@ -503,7 +505,7 @@ fi
 
 setenforce 0
 
-# Check if it worked
+# Check if setenforce worked
 
 SE=$(getenforce)
 if SE="Permissive"
@@ -575,14 +577,15 @@ mount -o loop,rw,sync,fscontext=u:object_r:rootfs:s0 /usr/local/Android_Images/s
 cp -a -r $ANDROID_ROOTFS/. /usr/local/Android_Images/Mounted
 
 fi
-# If we were copying files from the original Android rootfs, unmount it now we've finished..
+# If we were copying files from the original Android rootfs, unmount it now we've finished.
+
 if [  -f /opt/google/containers/android/system.raw.img ]; then
   umount -l /opt/google/containers/android/system.raw.img  > /dev/null 2>&1 || /bin/true
 fi
 
-# Unmount the new rootfs too, so we can mount it again without special context later
-umount -l /usr/local/Android_Images/system.raw.expanded.img 2>/dev/null
+# Unmount the new rootfs too, so we can mount it again without special context later.
 
+umount -l /usr/local/Android_Images/system.raw.expanded.img 2>/dev/null
 
 # The commented-out backup below seems unnecessary now, since we will mv the original file to *.bk in place,
 # plus it takes up too much space, especially since the Nougat filesize increase.
@@ -605,7 +608,9 @@ if [ -e /opt/google/containers/android/system.raw.img ]; then
   if [ ! -L /opt/google/containers/android/system.raw.img ]; then
     echo "Moving original rootfs image to /opt/google/containers/android/system.raw.img.bk"
     mv /opt/google/containers/android/system.raw.img  /opt/google/containers/android/system.raw.img.bk
+    
 # Make the symlink from the original pathname to our writeable rootfs image
+
     echo "Creating symlink to /usr/local/Android_Images/system.raw.expanded.img"
     ln  -s /usr/local/Android_Images/system.raw.expanded.img /opt/google/containers/android/system.raw.img
   fi
@@ -618,7 +623,8 @@ if [ -e /opt/google/containers/android/system.raw.img ]; then
   fi
   
 fi
-# Check if the SuperSU 'common directory' is already present in ~/Downloads. If it doesn't, we will try to download it (and unzip it with BusyBox).
+# Check if the SuperSU 'common directory' is already present in ~/Downloads. If not, we will try to download it (and unzip it with BusyBox).
+
 if [ ! -e /home/chronos/user/Downloads/common ]; then
   echo "SuperSU files not found in ~/Downloads! Attempting to download BusyBox and SuperSU now..."
   mkdir -p /tmp/aroc
@@ -630,7 +636,7 @@ if [ ! -e /home/chronos/user/Downloads/common ]; then
   
 fi
 
-sleep 0.2
+sleep 0.1
 
 cd /usr/local/Android_Images
 mkdir -p /usr/local/Android_Images/Mounted
@@ -640,6 +646,7 @@ mkdir -p /usr/local/Android_Images/Mounted
 mount -o loop,rw,sync /usr/local/Android_Images/system.raw.expanded.img /usr/local/Android_Images/Mounted 2>/dev/null
 
 # Set the right directory from which to copy the su binary.
+
 case "$ANDROID_ARCH" in
 armv7)
 SU_ARCHDIR=/home/chronos/user/Downloads/armv7
@@ -651,7 +658,9 @@ x86)
 SU_ARCHDIR=/home/chronos/user/Downloads/x86
 ;;
 esac
+
 # In case the above doesn't exist, try to download it.
+
 if [ ! -e $SU_ARCHDIR ]; then
   download_busybox
   
@@ -666,6 +675,7 @@ fi
 #  else
 #              SU_ARCHDIR=/home/chronos/user/Downloads/x86
 #fi
+
 # If we downloaded Busybox earlier, we may as well copy it to /system (although we don't need to).
 
 if [ -e /tmp/aroc/busybox ]; then
@@ -678,11 +688,11 @@ fi
 
 echo "Now placing SuperSU files. Locations as indicated by the SuperSU update-binary script."
 
-sleep 0.2
+sleep 0.1
 
 echo
 
-# Copying SuperSU files to $system
+# Copy SuperSU files to $system
     
 echo "Creating SuperSU directory in system/priv-app, copying SuperSU apk, and setting its permissions and contexts"
 
@@ -699,7 +709,7 @@ cd $system/priv-app/SuperSU
   chown 655360 $system/priv-app/SuperSU/SuperSU.apk
   chgrp 655360 $system/priv-app/SuperSU/SuperSU.apk
 
-sleep 0.2
+sleep 0.1
 
 # For arm Chromebooks we need /armv7/su, but for for Intel Chromebooks we need /x86/su.pie
 
@@ -735,7 +745,7 @@ cd $system/lib
   chgrp 655360 $system/lib/libsupol.so
   chcon u:object_r:system_file:s0 $system/lib/libsupol.so
   
-sleep 0.2
+sleep 0.1
 
 echo "Copying sh from system/bin/sh to system/xbin/sugote-mksh and setting permissions and contexts"
 
@@ -841,7 +851,7 @@ echo "Done!"
 echo
 echo "Please check the output of this script for any errors."
 
-sleep 0.2
+sleep 0.1
 
 echo
 echo "Please reboot now, then run script 02SEPatch.sh."
