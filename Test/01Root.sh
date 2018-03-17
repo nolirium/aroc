@@ -155,7 +155,7 @@ echo "Creating new Android system image at /usr/local/Android_Images/system.raw.
 #
 #fi
 
-truncate -s 2G  /usr/local/Android_Images/system.raw.expanded.img
+fallocate -l 2G  /usr/local/Android_Images/system.raw.expanded.img
 
 echo "Formatting system.raw.expanded.img as ext4 filesystem"
 echo
