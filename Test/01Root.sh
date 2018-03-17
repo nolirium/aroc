@@ -400,6 +400,7 @@ if [ -L /opt/google/containers/android/system.raw.img ]; then
   echo 
   echo "Press Ctrl+C to cancel, if you want to do this now."
   sleep 5
+  echo 
 
 # If the file is already a symlink, we need to check if a backup of the original system.raw.img exists
 
