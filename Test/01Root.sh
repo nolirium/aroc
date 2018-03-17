@@ -390,10 +390,9 @@ if [ -L /opt/google/containers/android/system.raw.img ]; then
   echo 
   echo 
   echo "WARNING: The file at /opt/google/containers/android/system.raw.img is already a symlink!"
-  echo "It appears you may be re-running the script without having first restored the backup Android container (and rebooted)." 
+  echo "Re-running this script without having first restored the backup Android container (and rebooted) may cause a problem." 
   echo 
-  echo "INFO: It's possible that Android might fail to load after re-running the script without restoring the backup system.raw.img beforehand."
-  echo "If, after running the script and rebooting, Android apps do not load, restore the original container and reboot before trying again."
+  echo "If Android apps fail to load, restore the original container from backup and reboot before trying again."
   echo 
   echo "You can usually restore the original (stock) Android container from the backup by entering the following (all one line):"
   echo 
