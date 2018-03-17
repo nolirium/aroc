@@ -370,6 +370,7 @@ sleep 0.1
 echo
 
 echo "Be aware that modifying the system partition could cause automatic updates to fail (unlikely), may result in having to powerwash or restore from USB potentially causing loss of data! Please make sure important files are backed up."
+echo 
 
 # Remount the Chrome OS root drive as writeable
 
