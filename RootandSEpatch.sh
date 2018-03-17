@@ -129,7 +129,6 @@ mkdir -p /usr/local/Android_Images/Mounted
 mkdir -p /usr/local/Android_Images/Original
 
 echo "Creating new Android system image at /usr/local/Android_Images/system.raw.expanded.img"
-echo
 
 # Make the image.
 # For arm, the unsquashed image needs to be at least~ 1GB (~800MB for Marshmallow).
@@ -137,32 +136,35 @@ echo
 
 # Since the raw rootfs has increased in size lately, create a blank 2GB image, then make it sparse so it takes only as much space on disk as required.
 
-if [ $ANDROID_ARCH=armv7 ]; then
-  cd /usr/local/Android_Images
-  dd if=/dev/zero of=system.raw.expanded.img count=2000000 bs=1024 status=progress
-  else
+#if [ $ANDROID_ARCH=armv7 ]; then
+#  cd /usr/local/Android_Images
+#  dd if=/dev/zero of=system.raw.expanded.img count=2000000 bs=1024 status=progress
+#  else
+#
+#  if [ $ANDROID_ARCH=x86 ]; then
+#    cd /usr/local/Android_Images
+#    dd if=/dev/zero of=system.raw.expanded.img count=2000000 bs=1024 status=progress
+#
+#    else
+#    echo "Error!"
+#    echo "Unable to detect correct architecture!"
+#    echo
+#    exit 1
+#  fi
+#
+#fi
 
-  if [ $ANDROID_ARCH=x86 ]; then
-    cd /usr/local/Android_Images
-    dd if=/dev/zero of=system.raw.expanded.img count=2000000 bs=1024 status=progress
-
-    else
-    echo "Error!"
-    echo "Unable to detect correct architecture!"
-    echo
-    exit 1
-  fi
-
-fi
+fallocate -l 2G  /usr/local/Android_Images/system.raw.expanded.img
+sleep 0.001
 echo
 echo "Formatting system.raw.expanded.img as ext4 filesystem"
 echo
 
-  mkfs ext4 -F /usr/local/Android_Images/system.raw.expanded.img
+mkfs ext4 -F /usr/local/Android_Images/system.raw.expanded.img 2>/dev/null
 
-echo "Converting system.raw.expanded.img to sparse image"
+#echo "Converting system.raw.expanded.img to sparse image"
 
-  fallocate -d /usr/local/Android_Images/system.raw.expanded.img
+# fallocate -d /usr/local/Android_Images/system.raw.expanded.img
 
 }
 
@@ -817,8 +819,8 @@ setenforce 0
 # Check if it worked
 
 SE=$(getenforce)
-if SE="Permissive"
-then
+
+if SE="Permissive"; then
 
 echo "SELinux successfully set to 'Permissive' temporarily"
 
@@ -827,7 +829,6 @@ echo "Copying Android system files"
 mount -o loop,rw,sync /usr/local/Android_Images/system.raw.expanded.img /usr/local/Android_Images/Mounted
 
 cp -a -r $ANDROID_ROOTFS/. /usr/local/Android_Images/Mounted
-
 else
 
 # In case we can't set SE Linux to 'Permissive', the following is a workaround to copy files with correct contexts in 'Enforcing' mode.
@@ -1099,12 +1100,10 @@ if  [ -d /opt/google/containers/android/rootfs/root/system ]; then
   
   sepolicy_patch
 
-  echo "Removing temporary files and directory /tmp/aroc"
+  echo "Removing temporary directory /tmp/aroc"
   rm -rf /tmp/aroc
   else
-
   echo "ERROR: No running Android system found. Unable to patch sepolicy."
-
 fi
 
 echo
