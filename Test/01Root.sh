@@ -38,7 +38,7 @@ if [ ! -e /.this ]; then
   echo
   echo
   echo "sudo /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification --partitions $(( $(rootdev -s | sed -r 's/.*(.)$/\1/') - 1))"
-  sleep 0.02
+  sleep 0.001
   echo
   echo
   echo
@@ -47,7 +47,7 @@ if [ ! -e /.this ]; then
   echo
   echo
   echo "sudo /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification"
-  sleep 0.02
+  sleep 0.001
   echo
   echo
   echo "Please run the "remove_rootfs_verification" command now, then reboot and run this script again."
@@ -69,7 +69,7 @@ mkdir -p /usr/local/Backup
 if [ -e /etc/init/arc-setup-env ]; then
   echo "Copying /etc/init/arc-setup-env to /usr/local/Backup"
   
-  sleep 0.02
+  sleep 0.001
 
   echo "Setting 'export WRITABLE_MOUNT=1', 'export ANDROID_DEBUGGABLE=1' and (if variable exists) 'export SHARE_FONTS=0' in /etc/init/arc-setup-env"
   
@@ -80,7 +80,7 @@ if [ -e /etc/init/arc-setup-env ]; then
 else
   echo "Copying /etc/init/arc-setup.conf and /etc/init/arc-system-mount.conf to /usr/local/Backup"
 
-  sleep 0.02
+  sleep 0.001
 
   echo "Setting 'env WRITABLE_MOUNT=1' in /etc/init/arc-setup.conf and /etc/init/arc-system-mount.conf"
 
@@ -283,7 +283,7 @@ cd $system/xbin
   chcon u:object_r:system_file:s0 $system/xbin/daemonsu
   chcon u:object_r:zygote_exec:s0 $system/xbin/sugote
 
-sleep 0.02
+sleep 0.001
 
 echo "Creating directory system/bin/.ext/.su"
 
@@ -301,7 +301,7 @@ cd $system/bin/.ext
   chown 655360 $system/bin/.ext/.su
   chgrp 655360 $system/bin/.ext/.su
 
-sleep 0.02
+sleep 0.001
 
 }
 
@@ -331,7 +331,7 @@ cd $system/xbin
   chcon u:object_r:system_file:s0 $system/xbin/daemonsu
   chcon u:object_r:zygote_exec:s0 $system/xbin/sugote
 
-sleep 0.02
+sleep 0.001
 
 echo "Creating directory system/bin/.ext/.su"
 
@@ -358,16 +358,16 @@ main() {
 check_if_root
 
 echo "Test Rooting scripts for Android on Chrome OS"
-sleep 0.02
+sleep 0.001
 echo
 echo "Version 0.25"
-sleep 0.02
+sleep 0.001
 echo
 echo "Unofficial scripts to copy SuperSU files to an Android system image on Chrome OS"
-sleep 0.02
+sleep 0.001
 echo
 echo "Part 1 of 2"
-sleep 0.02
+sleep 0.001
 echo
 
 echo "Be aware that modifying the system partition could cause automatic updates to fail (unlikely), may result in having to powerwash or restore from USB potentially causing loss of data! Please make sure important files are backed up."
@@ -390,13 +390,17 @@ modify_cros_files
 if [ -L /opt/google/containers/android/system.raw.img ]; then
   echo  
   echo "WARNING: The file at /opt/google/containers/android/system.raw.img is already a symlink!"
+  sleep 2
   echo 
   echo "If Android apps fail to load, restore the original container from backup and reboot before trying again."
+  sleep 0.2
   echo 
   echo "You can usually restore the original (stock) Android container from the backup by entering the following (all one line):"
+  sleep 0.2
   echo 
   echo
   echo "sudo mv /opt/google/containers/android/system.raw.img.bk /opt/google/containers/android/system.raw.img"
+  sleep 0.2
   echo 
   echo "Press Ctrl+C to cancel, if you want to do this now."
   sleep 5
@@ -649,7 +653,7 @@ if [ ! -e /home/chronos/user/Downloads/common ]; then
   
 fi
 
-sleep 0.02
+sleep 0.001
 
 cd /usr/local/Android_Images
 mkdir -p /usr/local/Android_Images/Mounted
@@ -701,7 +705,7 @@ fi
 
 echo "Now placing SuperSU files. Locations as indicated by the SuperSU update-binary script."
 
-sleep 0.02
+sleep 0.001
 
 echo
 
@@ -722,7 +726,7 @@ cd $system/priv-app/SuperSU
   chown 655360 $system/priv-app/SuperSU/SuperSU.apk
   chgrp 655360 $system/priv-app/SuperSU/SuperSU.apk
 
-sleep 0.02
+sleep 0.001
 
 # For arm Chromebooks we need /armv7/su, but for for Intel Chromebooks we need /x86/su.pie
 
@@ -758,7 +762,7 @@ cd $system/lib
   chgrp 655360 $system/lib/libsupol.so
   chcon u:object_r:system_file:s0 $system/lib/libsupol.so
   
-sleep 0.02
+sleep 0.001
 
 echo "Copying sh from system/bin/sh to system/xbin/sugote-mksh and setting permissions and contexts"
 
@@ -858,13 +862,15 @@ sed -i '7iimport /init.super.rc' $system/../init.rc
 # SuperSU copying script ends
 
 echo "Removing temporary files"
+sleep 0.001
 rm -rf /tmp/aroc
 echo
 echo "Done!"
+sleep 0.001
 echo
 echo "Please check the output of this script for any errors."
 
-sleep 0.02
+sleep 0.001
 
 echo
 echo "Please reboot now, then run script 02SEPatch.sh."
