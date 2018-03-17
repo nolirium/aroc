@@ -129,7 +129,7 @@ mkdir -p /usr/local/Android_Images/Mounted
 mkdir -p /usr/local/Android_Images/Original
 
 echo
-echo "Creating new Android system image at /usr/local/Android_Images/system.raw.expanded.img"
+echo "Creating new unsquashed sparse Android system image at /usr/local/Android_Images/system.raw.expanded.img"
 echo
 echo
 
@@ -157,17 +157,13 @@ echo
 #
 #fi
 
-dd of=system.raw.expanded.img bs=1024 seek=2000000 count=0
+truncate -s 2G  /usr/local/Android_Images/system.raw.expanded.img
 
 echo
 echo "Formatting system.raw.expanded.img as ext4 filesystem"
 echo
 
 mkfs ext4 -F /usr/local/Android_Images/system.raw.expanded.img
-
-#echo "Converting system.raw.expanded.img to sparse image"
-
-#fallocate -d /usr/local/Android_Images/system.raw.expanded.img
 
 }
 
