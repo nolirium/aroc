@@ -50,7 +50,7 @@ if [ ! -e /.this ]; then
   sleep 0.1
   echo
   echo
-  echo "Please run the "remove_rootfs_verification" command. (then reboot) before proceeding with this script."
+  echo "Please run the "remove_rootfs_verification" command now, then reboot and run this script again."
   exit 1
 fi
 
