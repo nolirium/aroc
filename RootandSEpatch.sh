@@ -127,7 +127,7 @@ create_image() {
 mkdir -p /usr/local/Android_Images
 mkdir -p /usr/local/Android_Images/Mounted
 mkdir -p /usr/local/Android_Images/Original
-
+echo
 echo "Creating new Android system image at /usr/local/Android_Images/system.raw.expanded.img"
 
 # Make the image.
@@ -136,6 +136,10 @@ echo "Creating new Android system image at /usr/local/Android_Images/system.raw.
 
 # Since the raw rootfs has increased in size lately, create a blank 2GB image, then make it sparse so it takes only as much space on disk as required.
 
+# If /usr/local/Android_Images/system.raw.expanded.img already exists, delete it.
+rm -rf  /usr/local/Android_Images/system.raw.expanded.img
+
+# Previous version of file creation used dd
 #if [ $ANDROID_ARCH=armv7 ]; then
 #  cd /usr/local/Android_Images
 #  dd if=/dev/zero of=system.raw.expanded.img count=2000000 bs=1024 status=progress
@@ -156,7 +160,6 @@ echo "Creating new Android system image at /usr/local/Android_Images/system.raw.
 
 fallocate -l 2G  /usr/local/Android_Images/system.raw.expanded.img
 sleep 0.001
-echo
 echo "Formatting system.raw.expanded.img as ext4 filesystem"
 echo
 
@@ -700,7 +703,23 @@ modify_cros_files
 # First, check if symlink already exists.
 
 if [ -L /opt/google/containers/android/system.raw.img ]; then
-  echo "The file at /opt/google/containers/android/system.raw.img is already a symlink!"
+
+  echo
+  echo "WARNING: The file at /opt/google/containers/android/system.raw.img is already a symlink!"
+  sleep 2
+  echo "Should Android apps fail to load after this, restore the original container from backup and reboot before trying again."
+  sleep 0.2
+  echo
+  echo "You can usually restore the original (stock) Android container from the backup by entering the following (all one line):"
+  sleep 0.2
+  echo
+  echo
+  echo "sudo mv /opt/google/containers/android/system.raw.img.bk /opt/google/containers/android/system.raw.img"
+  sleep 0.2
+  echo
+  echo "Press Ctrl+C to cancel, if you want to do this now."
+  sleep 3
+  echo
 
 # If the file is already a symlink, we need to check if a backup of the original system.raw.img exists.
 
