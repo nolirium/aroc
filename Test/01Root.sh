@@ -47,7 +47,6 @@ if [ ! -e /.this ]; then
   echo
   echo "Alternatively, run the command below, then follow the prompt."
   sleep 0.001
-  echo
   echo "sudo /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification"
   sleep 0.001
   echo
