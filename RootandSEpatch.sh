@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Functions (part 1) (Create a rootfs copy, adds SuperSU, renames original rootfs to .bk, adds symlink to R/W copy)
+# Functions (part 1) (Create a rootfs copy, add SuperSU, rename original rootfs to .bk, add symlink to R/W copy)
 
 check_if_root() {
 
@@ -14,11 +14,14 @@ fi
 }
 
 check_writeable_rootfs() {
-# TODO: Find a better way to do this, maybe
+
+# TODO: Find a better way to do this, maybe.
+
 if [  -e /.this ]; then
 rm /.this
 fi
-  touch "/.this"  2> /dev/null
+
+touch "/.this"  2> /dev/null
 
   if [ ! -e /.this ]; then
   echo
@@ -27,31 +30,30 @@ fi
   echo
   echo
   echo "In order to modify system files, the Chrome OS system partition needs to have been mounted writeable."
-echo "If you haven't already disabled rootfs verification, you will need to do so before proceeding with this script."
-echo
-echo "You should be able to disable rootfs verification by running the following command, then rebooting."
-echo
-echo
-echo
-echo
-echo "sudo /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification --partitions $(( $(rootdev -s | sed -r 's/.*(.)$/\1/') - 1))"
-sleep 0.2
-echo
-echo
-echo
-echo
-echo "Alternatively, run the command below, then follow the prompt."
-echo
-echo
-echo "sudo /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification"
-sleep 0.2
-echo
-echo
-sleep 0.2
-echo
-echo "Please run the "remove_rootfs_verification" command now. (then reboot)"
+  echo "If you haven't already disabled rootfs verification, you will need to do so before proceeding with this script."
+  echo
+  echo "You should be able to disable rootfs verification by running the following command, then rebooting."
+  echo
+  echo
+  echo
+  echo
+  echo "sudo /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification --partitions $(( $(rootdev -s | sed -r 's/.*(.)$/\1/') - 1))"
+  sleep 0.1
+  echo
+  echo
+  echo
+  echo
+  echo "Alternatively, run the command below, then follow the prompt."
+  echo
+  echo
+  echo "sudo /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification"
+  sleep 0.1
+  echo
+  echo
+  echo
+  echo
+  echo "Please run the "remove_rootfs_verification" command now, then reboot and run this script again."
   exit 1
-
 fi
 
 rm /.this
