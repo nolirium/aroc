@@ -120,7 +120,7 @@ esac
 
 create_image() {
 
-# This creates a blank ext4 image, formats and converts to sparse.
+# This creates and formats a blank sparse 2GB ext4 image.
 
 # Make some working directories if they don't already exist.
 
@@ -657,6 +657,15 @@ if [ ! -e /home/chronos/user/Downloads/common ]; then
 fi
 
 sleep 0.001
+
+# Test if fallocate does anything worthwhileat this point
+ls -al /usr/local/Android_Images/system.raw.expanded.img
+du -h /usr/local/Android_Images/system.raw.expanded.img
+
+fallocate -d /usr/local/Android_Images/system.raw.expanded.img
+
+ls -al /usr/local/Android_Images/system.raw.expanded.img
+du -h /usr/local/Android_Images/system.raw.expanded.img
 
 cd /usr/local/Android_Images
 mkdir -p /usr/local/Android_Images/Mounted
