@@ -17,11 +17,11 @@ check_writeable_rootfs() {
 
 # TODO: Find a better way to do this, maybe.
 
-# At present, we try and create a file on the CrOS rootfs.
+# At present, we try and create a file on the CrOS rootfs to test if rootfs verification is disabled.
 
 touch "/.this"  2> /dev/null
 
-# If we couldn't create the file, rootfs verification likely needs to be disabled.
+# If we couldn't create the file, rootfs verification likely still has yet to be disabled.
 
 if [ ! -e /.this ]; then
   echo
@@ -388,6 +388,13 @@ modify_cros_files
 
 if [ -L /opt/google/containers/android/system.raw.img ]; then
   echo "The file at /opt/google/containers/android/system.raw.img is already a symlink!"
+  echo "If you are re-running the script without first restoring the original Android container and rebooting, please be aware that there is a possibility that Android may fail to boot after doing this"
+  echo "If this happens, restore the original container and reboot, before trying again.:
+  echo 
+  echo "You can restore the original (stock) Android container from the backup by entering the following (all one line)"
+  echo 
+  echo "sudo mv /opt/google/containers/android/system.raw.img.bk /opt/google/containers/android/system.raw.img"
+  echo 
 
 # If the file is already a symlink, we need to check if a backup of the original system.raw.img exists
 
