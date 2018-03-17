@@ -51,12 +51,6 @@ sleep 0.2
 echo
 echo "Please run the "remove_rootfs_verification" command above. (then reboot)"
   exit 1
-else
-
-echo "WARNING: Unable to determine if rootfs verification is disabled. 
-echo "If this script returns errors, you may still need to disable rootfs verification."
-echo "You can do this by running the following command (then rebooting)".
-echo "sudo /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification --partitions $(( $(rootdev -s | sed -r 's/.*(.)$/\1/') - 1))"
 
 fi
 
