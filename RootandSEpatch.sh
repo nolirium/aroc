@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Functions (part 1) (Creates a rootfs copy, adds SuperSU, renames original rootfs to .bk, adds symlink to R/W copy)
+# Functions (part 1) (Create a rootfs copy, adds SuperSU, renames original rootfs to .bk, adds symlink to R/W copy)
 
 check_if_root() {
 
@@ -35,7 +35,7 @@ echo
 echo
 echo
 echo "sudo /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification --partitions $(( $(rootdev -s | sed -r 's/.*(.)$/\1/') - 1))"
-sleep 1
+sleep 0.2
 echo
 echo
 echo
@@ -44,14 +44,20 @@ echo "Alternatively, run the command below, then follow the prompt."
 echo
 echo
 echo "sudo /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification"
-sleep 1
+sleep 0.2
 echo
 echo
-echo "Press Ctrl+C to cancel if you still need to do the above."
-sleep 2
+sleep 0.2
 echo
-  echo "Please retry the "remove_rootfs_verification" command above. (then reboot)"
+echo "Please run the "remove_rootfs_verification" command above. (then reboot)"
   exit 1
+else
+
+echo "WARNING: Unable to determine if rootfs verification is disabled. 
+echo "If this script returns errors, you may still need to disable rootfs verification."
+echo "You can do this by running the following command (then rebooting)".
+echo "sudo /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification --partitions $(( $(rootdev -s | sed -r 's/.*(.)$/\1/') - 1))"
+
 fi
 
 rm /.this
@@ -89,7 +95,7 @@ if [ -e /etc/init/arc-setup-env ]; then
   
   sleep 1
 
-  echo "Setting 'export WRITABLE_MOUNT=1', 'export ANDROID_DEBUGGABLE=1' and 'export SHARE_FONTS=0' in /etc/init/arc-setup-env"
+  echo "Setting 'export WRITABLE_MOUNT=1', 'export ANDROID_DEBUGGABLE=1' and (if variable exists) 'export SHARE_FONTS=0' in /etc/init/arc-setup-env"
   
   sed -i 's/export WRITABLE_MOUNT=0/export WRITABLE_MOUNT=1/g' /etc/init/arc-setup-env 2>/dev/null
   sed -i 's/export ANDROID_DEBUGGABLE=0/export ANDROID_DEBUGGABLE=1/g' /etc/init/arc-setup-env 2>/dev/null
@@ -249,8 +255,8 @@ fi
 
 }
 
-# The following two functions simply copy the (architecture-dependent) su binary to /system.
-# For arm Chromebooks we need /armv7/su, but for Intel Chromebooks we need /x86/su.pie
+# The following two functions copy the (architecture-dependent) su binary to /system.
+# For arm Chromebooks we need /armv7/su, but for Intel Chromebooks we need /x86/su.pie.
 
 copy_su_armv7() {
   
