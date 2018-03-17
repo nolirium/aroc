@@ -132,8 +132,8 @@ echo
 echo "Creating new Android system image at /usr/local/Android_Images/system.raw.expanded.img"
 
 # Make the image.
-# For arm, the unsquashed image needs to be at least ~1.3GB (~800MB for Marshmallow).
-# For x86, the unsquashed image needs to be at least ~1.8GB (~1GB for Marshmallow).
+# For arm, the unsquashed image needs to be at least ~1.2GB (~800MB for Marshmallow).
+# For x86, the unsquashed image needs to be at least ~1.86B (~1GB for Marshmallow).
 
 # Since the raw rootfs has increased in size lately, create a blank 2GB sparse image.
 
@@ -426,7 +426,7 @@ if [ ! -e /opt/google/containers/android/system.raw.img ]; then
     echo "Using /opt/google/containers/android/system.raw.img.bk"
   else
 
-# In case the backup has been deleted from its usual place (e.g. to save space), check if one is present in ~/Downloads.
+# In case the backup has been deleted from its usual place (e.g. to save space), check if system.raw.img is present in ~/Downloads.
 
     if [ -f /home/chronos/user/Downloads/system.raw.img ]; then
       echo "Using /home/chronos/user/Downloads/system.raw.img"
@@ -699,15 +699,16 @@ if [ -e /tmp/aroc/busybox ]; then
   chmod a+x $system/xbin/busybox
 fi
 
+echo 
 echo "Now placing SuperSU files. Locations as indicated by the SuperSU update-binary script."
 
 sleep 0.001
 
-echo
-
 # Copy SuperSU files to $system
     
 echo "Creating SuperSU directory in system/priv-app, copying SuperSU apk, and setting its permissions and contexts"
+
+sleep 0.001
 
 cd $system/priv-app
   mkdir -p $system/priv-app/SuperSU
@@ -721,8 +722,6 @@ cd $system/priv-app/SuperSU
   chcon u:object_r:system_file:s0 $system/priv-app/SuperSU/SuperSU.apk
   chown 655360 $system/priv-app/SuperSU/SuperSU.apk
   chgrp 655360 $system/priv-app/SuperSU/SuperSU.apk
-
-sleep 0.001
 
 # For arm Chromebooks we need /armv7/su, but for for Intel Chromebooks we need /x86/su.pie
 
@@ -739,6 +738,8 @@ copy_su_x86
 esac
 
 echo "Copying supolicy to system/xbin, libsupol to system/lib and setting permissions and contexts"
+
+sleep 0.001
 
 cd $system/xbin
 
@@ -758,9 +759,9 @@ cd $system/lib
   chgrp 655360 $system/lib/libsupol.so
   chcon u:object_r:system_file:s0 $system/lib/libsupol.so
   
-sleep 0.001
-
 echo "Copying sh from system/bin/sh to system/xbin/sugote-mksh and setting permissions and contexts"
+
+sleep 0.001
 
 cd $system/bin
 
