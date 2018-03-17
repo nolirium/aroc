@@ -129,9 +129,7 @@ mkdir -p /usr/local/Android_Images/Mounted
 mkdir -p /usr/local/Android_Images/Original
 
 echo
-echo "Creating new unsquashed sparse Android system image at /usr/local/Android_Images/system.raw.expanded.img"
-echo
-echo
+echo "Creating new Android system image at /usr/local/Android_Images/system.raw.expanded.img"
 
 # Make the image.
 # For arm, the unsquashed image needs to be at least ~1.3GB (~800MB for Marshmallow).
@@ -159,7 +157,6 @@ echo
 
 truncate -s 2G  /usr/local/Android_Images/system.raw.expanded.img
 
-echo
 echo "Formatting system.raw.expanded.img as ext4 filesystem"
 echo
 
