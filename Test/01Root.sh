@@ -128,6 +128,7 @@ mkdir -p /usr/local/Android_Images
 mkdir -p /usr/local/Android_Images/Mounted
 mkdir -p /usr/local/Android_Images/Original
 
+echo
 echo "Creating new Android system image at /usr/local/Android_Images/system.raw.expanded.img"
 echo
 echo
@@ -387,8 +388,7 @@ modify_cros_files
 # First, check if symlink already exists.
 
 if [ -L /opt/google/containers/android/system.raw.img ]; then
-  echo 
-  echo 
+  echo  
   echo "WARNING: The file at /opt/google/containers/android/system.raw.img is already a symlink!"
   echo 
   echo "If Android apps fail to load, restore the original container from backup and reboot before trying again."
