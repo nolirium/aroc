@@ -27,14 +27,14 @@ touch "/.this"  2> /dev/null
   echo
   echo "Error!"
   echo "Unable to modify system!"
-  sleep 0.001
+  sleep 0.0001
   echo
   echo
   echo "In order to modify system files, the Chrome OS system partition needs to have been mounted writeable (i.e. rootfs verification disabled)."
   sleep 0.2
   echo
   echo "You can disable rootfs verification by running the following command, then rebooting."
-  sleep 0.001
+  sleep 0.0001
   echo
   echo
   echo
@@ -47,7 +47,7 @@ touch "/.this"  2> /dev/null
   echo
   echo "Alternatively, run the command below, then follow the prompt."
   echo "sudo /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification"
-  sleep 0.001
+  sleep 0.0001
   echo
   echo
   echo "Please run the "remove_rootfs_verification" command now, then reboot and run this script again."
@@ -672,13 +672,13 @@ main() {
 check_if_root
 
 echo "Rooting scripts for Android on Chrome OS"
-sleep 0.2
+sleep 0.05
 echo
 echo "Version 0.25"
-sleep 0.2
+sleep 0.05
 echo
 echo "Unofficial scripts to copy SuperSU files to an Android system image on Chrome OS"
-sleep 0.2
+sleep 0.05
 echo
 check_writeable_rootfs
 
