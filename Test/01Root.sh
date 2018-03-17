@@ -160,7 +160,7 @@ fallocate -l 2G  /usr/local/Android_Images/system.raw.expanded.img
 echo "Formatting system.raw.expanded.img as ext4 filesystem"
 echo
 
-mkfs ext4 -F /usr/local/Android_Images/system.raw.expanded.img
+mkfs ext4 -F /usr/local/Android_Images/system.raw.expanded.img > 2 /dev/null
 
 }
 
