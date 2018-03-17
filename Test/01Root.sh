@@ -366,10 +366,10 @@ echo "Unofficial scripts to copy SuperSU files to an Android system image on Chr
 sleep 0.1
 echo
 echo "Part 1 of 2"
-sleep 1
+sleep 0.1
 echo
 
-echo "Be aware that modifying the system partition could cause automatic updates to fail, may result in having to powerwash or restore from USB potentially causing loss of data! Please make sure important files are backed up."
+echo "Be aware that modifying the system partition could cause automatic updates to fail (unlikely), may result in having to powerwash or restore from USB potentially causing loss of data! Please make sure important files are backed up."
 
 # Remount the Chrome OS root drive as writeable
 
@@ -585,7 +585,6 @@ fi
 # Unmount the new rootfs too, so we can mount it again without special context later.
 
 umount -l /usr/local/Android_Images/system.raw.expanded.img 2>/dev/null
-
 
 # The commented-out backup below seems unnecessary now, since we will mv the original file to *.bk in place,
 # plus it takes up too much space, especially since the Nougat filesize increase.
