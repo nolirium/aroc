@@ -5,7 +5,7 @@ Android Root on ChromeOS - Chrome OS shell scripts to make a R/W copy of the And
 
 ### Prerequisites
 
-A Chrome OS device which supports Android Apps, with storage space for a ~2GB file in /usr/local (The script currently creates a sparse file, max size 2GB, actual size will vary but should be somewhat smaller)
+A Chrome OS device which supports Android Apps, with storage space for a ~2GB file in /usr/local. The script currently creates a sparse file with max size 2GB. (Actual disk space used should be quite a bit less than 2GB, but varies depending on device).
 
 The device must be in Developer Mode, and in addition, the Chrome OS system partition needs to have been made writeable (rootfs verification disabled).
 
@@ -36,7 +36,7 @@ Reboot again
 
 Then open Play Store, Root Checker, Ad-Away, etc, etc.
 
-The scripts may either be downloaded and ran locally, or via curl e.g. 
+The scripts may either be downloaded and ran locally, or via curl or wget e.g. 
 
 `curl -Ls https://raw.githubusercontent.com/nolirium/aroc/master/01Root.sh | sudo sh`
 
