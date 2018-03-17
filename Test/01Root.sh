@@ -18,10 +18,10 @@ check_writeable_rootfs() {
 # TODO: Find a better way to do this, maybe.
 
 # At present, we try and create a file on the CrOS rootfs to test if rootfs verification is disabled.
+# If we can't create the file, rootfs verification likely still has yet to be switched off.
 
 touch "/.this"  2> /dev/null
 
-# If we couldn't create the file, rootfs verification likely still has yet to be disabled.
 
 if [ ! -e /.this ]; then
   echo
@@ -390,7 +390,7 @@ if [ -L /opt/google/containers/android/system.raw.img ]; then
   echo 
   echo 
   echo "WARNING: The file at /opt/google/containers/android/system.raw.img is already a symlink!"
-  echo "It looks like you may be re-running the script without having first restored the backup Android container (and rebooted)." 
+  echo "It appears you may be re-running the script without having first restored the backup Android container (and rebooted)." 
   echo "Android might fail to boot after running the script without restoring the backup system.raw.img beforehand."
   echo "If this happens, restore the original container and reboot, before trying again."
   echo 
