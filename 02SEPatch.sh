@@ -1,24 +1,22 @@
 #!/bin/sh -e
 
-#02SEpatch.sh
-
 echo "Test Rooting scripts for Android on Chrome OS"
-sleep 0.5
+sleep 0.1
 echo
-echo "Version 0.23"
-sleep 0.2
+echo "Version 0.25"
+sleep 0.1
 echo
 echo "Unofficial scripts to copy SuperSU files to an Android system image on Chrome OS"
-sleep 0.2
+sleep 0.1
 echo
 echo "Part 2 of 2"
-sleep 1
+sleep 0.1
 echo
 echo "There is an SE Linux policy file located at /etc/selinux/arc/policy/policy.30, which can be patched with SuperSU's patching tool."
-sleep 1
+sleep 0.1
 echo
 echo "This script assists with the process."
-sleep 1
+sleep 0.1
 
 if [ ! -e /opt/google/containers/android/rootfs/root/system/xbin/su ]; then
   echo
@@ -50,7 +48,7 @@ else
   
   echo
   echo "Opening an Android shell and attempting to patch policy_30."
-  sleep 1
+  sleep 0.1
   echo
   echo
   
@@ -101,7 +99,7 @@ else
     chgrp 655360  /opt/google/containers/android/rootfs/root/sepolicy
     chcon  u:object_r:rootfs:s0 /opt/google/containers/android/rootfs/root/sepolicy
 
-    sleep 1
+    sleep 0.1
     echo "Done!"
     echo "Please reboot now"
     else
