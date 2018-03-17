@@ -49,7 +49,7 @@ echo
 echo
 sleep 0.2
 echo
-echo "Please run the "remove_rootfs_verification" command above. (then reboot)"
+echo "Please run the "remove_rootfs_verification" command now. (then reboot)"
   exit 1
 
 fi
