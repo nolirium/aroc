@@ -402,6 +402,7 @@ if [ -L /opt/google/containers/android/system.raw.img ]; then
   echo "sudo mv /opt/google/containers/android/system.raw.img.bk /opt/google/containers/android/system.raw.img"
   sleep 0.2
   echo 
+  echo
   echo "Press Ctrl+C to cancel, if you want to do this now."
   sleep 5
   echo 
