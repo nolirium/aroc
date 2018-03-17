@@ -387,11 +387,14 @@ modify_cros_files
 # First, check if symlink already exists.
 
 if [ -L /opt/google/containers/android/system.raw.img ]; then
-  echo "The file at /opt/google/containers/android/system.raw.img is already a symlink!"
-  echo "If you are re-running the script without first restoring the original Android container and rebooting, please be aware that there is a possibility that Android may fail to boot after doing this"
+  echo 
+  echo 
+  echo "WARNING: The file at /opt/google/containers/android/system.raw.img is already a symlink!"
+  echo "It looks like you may be re-running the script without having first restored the backup Android container (and rebooted)." 
+  echo "Android might fail to boot after running the script without restoring the backup system.raw.img beforehand."
   echo "If this happens, restore the original container and reboot, before trying again."
   echo 
-  echo "You can restore the original (stock) Android container from the backup by entering the following (all one line)"
+  echo "You can usually restore the original (stock) Android container from the backup by entering the following (all one line)"
   echo 
   echo "sudo mv /opt/google/containers/android/system.raw.img.bk /opt/google/containers/android/system.raw.img"
   echo 
