@@ -29,10 +29,10 @@ if [ ! -e /.this ]; then
   echo "Unable to modify system!"
   echo
   echo
-  echo "In order to modify system files, the Chrome OS system partition needs to have been mounted writeable."
-  echo "If you haven't already disabled rootfs verification, you will need to do so before proceeding with this script."
+  echo "In order to modify system files, the Chrome OS system partition needs to have been mounted writeable (i.e. rootfs verification disabled)."
   echo
-  echo "You should be able to disable rootfs verification by running the following command, then rebooting."
+  echo
+  echo "You can disable rootfs verification by running the following command, then rebooting."
   echo
   echo
   echo
@@ -50,7 +50,7 @@ if [ ! -e /.this ]; then
   sleep 0.1
   echo
   echo
-  echo "Please run the "remove_rootfs_verification" command now. (then reboot)"
+  echo "Please run the "remove_rootfs_verification" command. (then reboot) before proceeding with this script."
   exit 1
 fi
 
