@@ -21,7 +21,7 @@ check_writeable_rootfs() {
 
 touch "/.this"  2> /dev/null
 
-# If we couldn't create the file, rootfs verification likely is yet to be disabled.
+# If we couldn't create the file, rootfs verification likely still needs to be turned off.
 
 if [ ! -e /.this ]; then
   echo
@@ -135,17 +135,18 @@ echo
 # Make the image.
 # For arm, the unsquashed image needs to be at least ~1.3GB (~800MB for Marshmallow).
 # For x86, the unsquashed image needs to be at least ~1.8GB (~1GB for Marshmallow).
+# And for x86-64 containers (e,g, PixelBook), it apparently needs to be somewhat larger still.
 
 # Since the raw rootfs has increased in size lately, create a blank 2GB image, then make it sparse so it takes only as much space on disk as required.
 
 if [ $ANDROID_ARCH=armv7 ]; then
   cd /usr/local/Android_Images
-  dd if=/dev/zero of=system.raw.expanded.img count=2000000 bs=1024 status=progress
+  dd if=/dev/zero of=system.raw.expanded.img count=1800000 bs=1024 status=progress
   else
 
   if [ $ANDROID_ARCH=x86 ]; then
     cd /usr/local/Android_Images
-    dd if=/dev/zero of=system.raw.expanded.img count=2000000 bs=1024 status=progress
+    dd if=/dev/zero of=system.raw.expanded.img count=2200000 bs=1024 status=progress
 
     else
     echo "Error!"
