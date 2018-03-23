@@ -45,18 +45,28 @@ Reboot
 
 Reboot again
 
+----
+
+#### NOTE: For convenience, there is now also a combined script, which executes the commands in the first script, then bind mounts a couple of directories within the Android container, then executes the commands in the second script. With the combined script, it is necessary to reboot once only, after the script has completed. 
+
+To run the combined script:
+
+`curl -Ls https://raw.githubusercontent.com/nolirium/aroc/onescript/RootandSEpatch.sh | sudo sh`
+
+----
+
 ### Descriptions
 
 #### 01Root.sh
 
-Creates the directory /usr/local/Android_Images, formats a ~ 2GB ext4 filesystem image in /usr/local/Android_Images therein, makes the image sparse, and copies the files from the factory shipped squashfs Android rootfs image to the new, writeable, image. Modifies Chrome OS system files in /etc/init/- either arc-setup-env or arc-system-mount.conf and arc-setup.conf (as required) - changing the debuggable and mount-as-read-only flags. Renames the original filesystem image to .bk & replaces it with a symlink to the newly-created image. Mounts the freshly created writeable Android rootfs image, and copies SuperSU files to the mounted image as specified in the SuperSU update-binary (if the directories from within the SuperSU installer zip are not present in ~/Downloads, the script will attempt to download them).
+Creates the directory /usr/local/Android_Images, formats a ~ 2GB sparse ext4 filesystem image in /usr/local/Android_Images therein, and copies the files from the factory shipped squashfs Android rootfs image to the new, writeable, image. Modifies Chrome OS system files in /etc/init - either arc-setup-env or arc-system-mount.conf and arc-setup.conf (as required) - changing the debuggable and mount-as-read-only flags. Renames the original filesystem image to .bk & replaces it with a symlink to the newly-created image. Mounts the freshly created writeable Android rootfs image, and copies SuperSU files to the mounted image as specified in the SuperSU update-binary (if the directories from within the SuperSU installer zip are not present in ~/Downloads, the script will attempt to download them).
 
 
 #### 02SEpatch.sh
 
 Copies an SELinux policy file found at /etc/selinux/arc/policy/policy.30 to ~/Downloads, opens an Android shell and attempts to patch the policy with SuperSU's 'supolicy' tool. If patching is successful, overwrites the original policy.30 with the patched version, and overwrites /sepolicy in the Android container with the patched policy.  Backup copies of the original policy.30 and /sepolicy are saved in /usr/local/Backup
 
-Following successful execution of the above pair of scripts, the Android instance should be rooted and fully working.
+Following successful execution of the above, the Android instance should be rooted and fully working.
 
 
 #### Unroot.sh
