@@ -5,8 +5,7 @@ Android Root on ChromeOS - Chrome OS shell scripts to make a R/W copy of the And
 
 ### Prerequisites
 
-A Chrome OS device which supports Android Apps, with storage space for a ~2GB file in /usr/local. The script currently creates a sparse file with max size 2GB. (Actual disk space used should be quite a bit less than 2GB, but varies depending on device).
-
+A Chrome OS device which supports Android Apps, with storage space for a ~2GB file in /usr/local.
 The device must be in Developer Mode, and in addition, the Chrome OS system partition needs to have been made writeable (rootfs verification disabled).
 
 A straightforward way to disable rootfs verification should be with either of the following two shell commands, followed by a reboot. 
