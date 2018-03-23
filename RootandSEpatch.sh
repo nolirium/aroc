@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Functions (part 1) (Create a rootfs copy, add SuperSU, rename original rootfs to .bk, add symlink to R/W copy)
+# Functions (part 1) (Create an unsquashed rootfs copy, add SuperSU, rename original rootfs to .bk, add symlink to R/W copy)
 
 check_if_root() {
 
