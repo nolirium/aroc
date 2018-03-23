@@ -140,25 +140,28 @@ echo "Creating new Android system image at /usr/local/Android_Images/system.raw.
 rm -rf  /usr/local/Android_Images/system.raw.expanded.img
 
 # Previous version of file creation used dd
-#if [ $ANDROID_ARCH=armv7 ]; then
-#  cd /usr/local/Android_Images
+if [ $ANDROID_ARCH=armv7 ]; then
+  cd /usr/local/Android_Images
 #  dd if=/dev/zero of=system.raw.expanded.img count=2000000 bs=1024 status=progress
-#  else
-#
-#  if [ $ANDROID_ARCH=x86 ]; then
-#    cd /usr/local/Android_Images
-#    dd if=/dev/zero of=system.raw.expanded.img count=2000000 bs=1024 status=progress
-#
-#    else
-#    echo "Error!"
-#    echo "Unable to detect correct architecture!"
-#    echo
-#    exit 1
-#  fi
-#
-#fi
+fallocate -l 1.7G  /usr/local/Android_Images/system.raw.expanded.img
 
-fallocate -l 2G  /usr/local/Android_Images/system.raw.expanded.img
+  else
+
+  if [ $ANDROID_ARCH=x86 ]; then
+    cd /usr/local/Android_Images
+#    dd if=/dev/zero of=system.raw.expanded.img count=2000000 bs=1024 status=progress
+fallocate -l 2.2G  /usr/local/Android_Images/system.raw.expanded.img
+
+   else
+    echo "Error!"
+    echo "Unable to detect correct architecture!"
+    echo
+    exit 1
+  fi
+#
+fi
+
+#fallocate -l 2G  /usr/local/Android_Images/system.raw.expanded.img
 sleep 0.001
 echo "Formatting system.raw.expanded.img as ext4 filesystem"
 echo
@@ -707,12 +710,11 @@ if [ -L /opt/google/containers/android/system.raw.img ]; then
   echo
   echo "WARNING: The file at /opt/google/containers/android/system.raw.img is already a symlink!"
   sleep 2
+  echo 
   echo "Should Android apps fail to load after this, restore the original container from backup and reboot before trying again."
   sleep 0.2
-  echo
   echo "You can usually restore the original (stock) Android container from the backup by entering the following (all one line):"
   sleep 0.2
-  echo
   echo
   echo "sudo mv /opt/google/containers/android/system.raw.img.bk /opt/google/containers/android/system.raw.img"
   sleep 0.2
