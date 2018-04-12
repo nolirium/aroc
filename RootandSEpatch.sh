@@ -180,30 +180,33 @@ download_busybox () {
 # Since there doesn't appear to be a built-in zip uncompresser available on the command line, if we need to download SuperSU,
 # we download BusyBox in order to unzip it. We could also install BusyBox in Android w/ its symlinks later, if we want.
 
-echo "Downloading BusyBox"
-mkdir -p /tmp/aroc
-cd /tmp/aroc
+if [ ! -e /usr/local/bin/busybox ]; then
+  echo "Downloading BusyBox"
+  mkdir -p /tmp/aroc
+  cd /tmp/aroc
 
-if [ $ANDROID_ARCH=armv7 ]; then
-  curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-armv6l -o busybox
+  if [ $ANDROID_ARCH=armv7 ]; then
+   curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-armv6l -o busybox
   else
   
-  if [ ANDROID_ARCH=x86 ]; then
-    curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-x86_64 -o busybox
+    if [ ANDROID_ARCH=x86 ]; then
+     curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-x86_64 -o busybox
     else
-    echo "Error!"
-    echo "Unable to detect correct architecture!"
-    echo
-    exit 1
-    echo
-  fi
+     echo "Error!"
+     echo "Unable to detect correct architecture!"
+     echo
+     exit 1
+     echo
+    fi
   
-fi
+  fi
 
-echo "Moving BusyBox to /usr/local/bin"
-mkdir -p /usr/local/bin
-mv busybox /usr/local/bin/busybox
-chmod a+x /usr/local/bin/busybox
+  echo "Moving BusyBox to /usr/local/bin"
+  mkdir -p /usr/local/bin
+  mv busybox /usr/local/bin/busybox
+  chmod a+x /usr/local/bin/busybox
+
+fi
 
 }
 
@@ -361,37 +364,7 @@ sepolicy_patch() {
 # It copies su etc. to a temp. directory and then bind mounts it.
 # This is so we can patch selinux without having to reboot the Chromebook first.
 
-download_busybox () {
-  
-# Since there doesn't appear to be a built-in zip uncompresser available on the command line, if we need to download SuperSU,
-# we download BusyBox in order to unzip it. We could also install BusyBox in Android w/ its symlinks later, if we want.
 
-echo "Downloading BusyBox"
-mkdir -p /tmp/aroc
-cd /tmp/aroc
-
-if [ $ANDROID_ARCH=armv7 ]; then
-  curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-armv6l -o busybox
-  else
-  
-  if [ ANDROID_ARCH=x86 ]; then
-    curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-x86_64 -o busybox
-    else
-    echo "Error!"
-    echo "Unable to detect correct architecture!"
-    echo
-    exit 1
-    echo
-  fi
-  
-fi
-
-echo "Moving BusyBox to /usr/local/bin"
-mkdir -p /usr/local/bin
-mv busybox /usr/local/bin/busybox
-chmod a+x /usr/local/bin/busybox
-
-}
 
 download_supersu() {
 
@@ -545,7 +518,7 @@ SU_ARCHDIR=/home/chronos/user/Downloads/x86
 ;;
 esac
 
-# If  su doesn't appear to be present, try to download it.
+# If su doesn't appear to be present, try to download it.
 
 if [ ! -e $SU_ARCHDIR ]; then
   download_busybox
