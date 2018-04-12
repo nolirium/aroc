@@ -134,12 +134,14 @@ echo "Creating new Android system image at /usr/local/Android_Images/system.raw.
 # For arm, the unsquashed image needs to be at least~ 1GB (~800MB for Marshmallow).
 # For x86, the unsquashed image needs to be at least ~1.4GB (~1GB for Marshmallow).
 
-# Since the raw rootfs has increased in size lately, create a blank 2GB image, then make it sparse so it takes only as much space on disk as required.
+# Since the raw rootfs has increased in size lately, create a blank 2GB image, make it sparse so it takes only as much space on disk as required.
 
 # If /usr/local/Android_Images/system.raw.expanded.img already exists, delete it.
 rm -rf  /usr/local/Android_Images/system.raw.expanded.img
 
 # Previous version of file creation used dd
+# IT's much faster if we use fallocate and starts off sparse so uses only as much space on disk as necessary.
+
 if [ $ANDROID_ARCH=armv7 ]; then
   cd /usr/local/Android_Images
 #  dd if=/dev/zero of=system.raw.expanded.img count=2000000 bs=1024 status=progress
@@ -149,7 +151,7 @@ fallocate -l 1.7G  /usr/local/Android_Images/system.raw.expanded.img
 
   if [ $ANDROID_ARCH=x86 ]; then
     cd /usr/local/Android_Images
-#    dd if=/dev/zero of=system.raw.expanded.img count=2000000 bs=1024 status=progress
+#  dd if=/dev/zero of=system.raw.expanded.img count=2000000 bs=1024 status=progress
 fallocate -l 2.2G  /usr/local/Android_Images/system.raw.expanded.img
 
    else
@@ -166,11 +168,10 @@ sleep 0.001
 echo "Formatting system.raw.expanded.img as ext4 filesystem"
 echo
 
+# After we create an image with fallocate, mkfs.ext4 complains about the geometry/cylinders when we format it
+# Here, we ignore this complaint, sending it 2>/dev/null
+
 mkfs ext4 -F /usr/local/Android_Images/system.raw.expanded.img 2>/dev/null
-
-#echo "Converting system.raw.expanded.img to sparse image"
-
-# fallocate -d /usr/local/Android_Images/system.raw.expanded.img
 
 }
 
@@ -184,11 +185,11 @@ mkdir -p /tmp/aroc
 cd /tmp/aroc
 
 if [ $ANDROID_ARCH=armv7 ]; then
-  wget https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-armv6l -O busybox
+  curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-armv6l -o busybox
   else
   
   if [ ANDROID_ARCH=x86 ]; then
-    wget https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-x86_64 -O busybox
+    curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-x86_64 -o busybox
     else
     echo "Error!"
     echo "Unable to detect correct architecture!"
@@ -211,7 +212,7 @@ download_supersu() {
 echo "Downloading SuperSU-v2.82-SR3"
 mkdir -p /tmp/aroc
 cd /tmp/aroc
-wget https://download.chainfire.eu/1122/SuperSU/SR3-SuperSU-v2.82-SR3-20170813133244.zip?retrieve_file=1 -O SuperSU.zip
+curl https://download.chainfire.eu/1122/SuperSU/SR3-SuperSU-v2.82-SR3-20170813133244.zip?retrieve_file=1 -o SuperSU.zip
 
 # Check filesize
 supersu_size=$(stat -c %s /tmp/aroc/SuperSU.zip)
@@ -221,7 +222,7 @@ if [ $supersu_size = 6918737 ]; then
   /usr/local/bin/busybox unzip SuperSU.zip
   else
   echo "Unexpected file size. Trying again..."
-  wget https://download.chainfire.eu/1122/SuperSU/SR3-SuperSU-v2.82-SR3-20170813133244.zip?retrieve_file=1 -O SuperSU.zip
+  curl https://download.chainfire.eu/1122/SuperSU/SR3-SuperSU-v2.82-SR3-20170813133244.zip?retrieve_file=1 -o SuperSU.zip
 fi
 
 # Check filesize again...
@@ -370,11 +371,11 @@ mkdir -p /tmp/aroc
 cd /tmp/aroc
 
 if [ $ANDROID_ARCH=armv7 ]; then
-  wget https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-armv6l -O busybox
+  curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-armv6l -o busybox
   else
   
   if [ ANDROID_ARCH=x86 ]; then
-    wget https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-x86_64 -O busybox
+    curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-x86_64 -o busybox
     else
     echo "Error!"
     echo "Unable to detect correct architecture!"
@@ -397,7 +398,7 @@ download_supersu() {
 echo "Downloading SuperSU-v2.82-SR3"
 mkdir -p /tmp/aroc
 cd /tmp/aroc
-wget https://download.chainfire.eu/1122/SuperSU/SR3-SuperSU-v2.82-SR3-20170813133244.zip?retrieve_file=1 -O SuperSU.zip
+curl https://download.chainfire.eu/1122/SuperSU/SR3-SuperSU-v2.82-SR3-20170813133244.zip?retrieve_file=1 -o SuperSU.zip
 
 # Check filesize
 supersu_size=$(stat -c %s /tmp/aroc/SuperSU.zip)
@@ -407,7 +408,7 @@ if [ $supersu_size = 6918737 ]; then
   /usr/local/bin/busybox unzip SuperSU.zip
   else
   echo "Unexpected file size. Trying again..."
-  wget https://download.chainfire.eu/1122/SuperSU/SR3-SuperSU-v2.82-SR3-20170813133244.zip?retrieve_file=1 -O SuperSU.zip
+  curl https://download.chainfire.eu/1122/SuperSU/SR3-SuperSU-v2.82-SR3-20170813133244.zip?retrieve_file=1 -o SuperSU.zip
 fi
 
 # Check filesize again...
@@ -641,6 +642,17 @@ else
 
     sleep 0.2
     echo "SE Linux policy patching completed!"
+    
+ # If we downloaded Busybox earlier, we may as well copy it to /system (although we don't need to for the purpose of this script).
+
+#if [ -e /tmp/aroc/busybox ]; then
+#  echo "Copying BusyBox to /system/xbin"
+#  cp  /tmp/aroc/busybox $system/xbin
+#  chown 655360 $system/xbin/busybox
+#  chgrp 655360 $system/xbin/busybox
+#  chmod a+x $system/xbin/busybox
+#fi
+
 
     echo "Rebooting the Android container"
     printf "reboot" | android-sh 2>/dev/null
@@ -978,16 +990,6 @@ fi
               common=/home/chronos/user/Downloads/common
               system=/usr/local/Android_Images/Mounted/system
               #system_original=/opt/google/containers/android/rootfs/root/system
-
-# If we downloaded Busybox earlier, we may as well copy it to /system (although we don't need to for the purpose of this script).
-
-if [ -e /tmp/aroc/busybox ]; then
-  echo "Copying BusyBox to /system/xbin"
-  cp  /tmp/aroc/busybox $system/xbin
-  chown 655360 $system/xbin/busybox
-  chgrp 655360 $system/xbin/busybox
-  chmod a+x $system/xbin/busybox
-fi
 
 echo "Now placing SuperSU files. Locations as indicated by the SuperSU update-binary script."
 sleep 0.2
