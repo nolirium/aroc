@@ -137,7 +137,7 @@ echo
 # For x86, the unsquashed image needs to be at least ~1.8GB (~1GB for Marshmallow).
 # And for x86-64 containers (e,g, PixelBook), it apparently needs to be somewhat larger still.
 
-# Since the raw rootfs has increased in size lately, create a blank 2GB image, then make it sparse so it takes only as much space on disk as required.
+# Since the raw rootfs has increased in size lately, create a blank sparse 2GB image, which should takes only as much space on disk as required.
 
 if [ $ANDROID_ARCH=armv7 ]; then
   cd /usr/local/Android_Images
@@ -174,30 +174,37 @@ download_busybox () {
 # Since there doesn't appear to be a built-in zip uncompresser available on the command line, if we need to download SuperSU,
 # we download BusyBox in order to unzip it. We could also install BusyBox in Android w/ its symlinks later, if we want.
 
-echo "Downloading BusyBox"
-mkdir -p /tmp/aroc
-cd /tmp/aroc
+if [ ! -e /usr/local/bin/busybox ]; then
+  echo "Downloading BusyBox"
+  mkdir -p /tmp/aroc
+  cd /tmp/aroc
 
-if [ $ANDROID_ARCH=armv7 ]; then
-  curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-armv6l -o busybox
+  if [ $ANDROID_ARCH=armv7 ]; then
+   curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-armv6l -o busybox
   else
   
-  if [ ANDROID_ARCH=x86 ]; then
-    curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-x86_64 -o busybox
-    else
-    echo "Error!"
-    echo "Unable to detect correct architecture!"
-    echo
-    exit 1
-    echo
-  fi
-  
-fi
+   if [ ANDROID_ARCH=x86 ]; then
 
-echo "Moving BusyBox to /usr/local/bin"
-mkdir -p /usr/local/bin
-mv busybox /usr/local/bin/busybox
-chmod a+x /usr/local/bin/busybox
+# Commenting out the x64 Intel version for now as most x64 systems still seem to use a 32 bit Android container.
+# So if we use the 32 bit BusyBox here, copying it to Android should also work on all machines.
+#     curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-x86_64 -o busybox
+     curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-i686 -o busybox
+
+    else
+     echo "Error!"
+     echo "Unable to detect correct architecture!"
+     echo
+     exit 1
+     echo
+    fi
+  
+  fi
+
+  echo "Moving BusyBox to /usr/local/bin"
+  mkdir -p /usr/local/bin
+  mv busybox /usr/local/bin/busybox
+  chmod a+x /usr/local/bin/busybox
+fi
 
 }
 
@@ -759,8 +766,8 @@ cd $system/xbin
   chmod 0755 $system/xbin/sugote-mksh
   chcon u:object_r:system_file:s0 $system/xbin/sugote-mksh
   
-# Hijacking app_process (below) worked on Marshmallow. Does not work on N.
-# One approach that works on Nougat: modifying init.*.rc instead.
+# Hijacking app_process (below) worked on Marshmallow. Does not aooear to work on N.
+# One approach that does work on Nougat: modifying init.*.rc instead.
   
 #echo "Moving app_process32"
 
