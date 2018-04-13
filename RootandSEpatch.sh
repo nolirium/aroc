@@ -190,7 +190,12 @@ if [ ! -e /usr/local/bin/busybox ]; then
   else
   
     if [ ANDROID_ARCH=x86 ]; then
-     curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-x86_64 -o busybox
+
+# Commenting out the x64 version as most x64 systems still use a 32 bit Android container
+# So if we use the 32 bit BusyBox, copying it to Android will work
+#     curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-x86_64 -o busybox
+     curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-i686 -o busybox
+
     else
      echo "Error!"
      echo "Unable to detect correct architecture!"
@@ -356,6 +361,46 @@ cd $system/bin/.ext
 
 }
 
+
+copy_busybox()
+
+{
+   # If we downloaded Busybox earlier, we may as well copy it to /system (although we don't need to for the purpose of this script).
+   
+echo "Attempting to install BusyBox into Android container"
+
+if [ -e /tmp/aroc/busybox ] ; then
+  echo "Copying BusyBox to /system/xbin"
+  cp  /tmp/aroc/busybox $system/xbin
+  chown 655360 $system/xbin/busybox
+  chgrp 655360 $system/xbin/busybox
+  chmod a+x $system/xbin/busybox
+  cd $system/xbin/
+
+  echo "Executing './busybox --install -s ../xbin'"
+  ./busybox --install -s ../xbin
+  echo "Replacing absolute symlinks created by 'busybox --install' with relative symlinks"
+  find ../xbin -lname "*" -exec  sh -c 'ln -sfr busybox $0' {} \;
+
+else
+
+  if [ -e /usr/local/bin/busybox ] ; then
+    cp  /usr/local/bin/busybox $system/xbin
+    chown 655360 $system/xbin/busybox
+    chgrp 655360 $system/xbin/busybox
+    chmod a+x $system/xbin/busybox
+    cd $system/xbin/
+
+    echo "Executing './busybox --install -s ../xbin'"
+    ./busybox --install -s ../xbin
+    echo "Replacing absolute symlinks created by 'busybox --install' with relative symlinks"
+    find ../xbin -lname "*" -exec  sh -c 'ln -sfr busybox $0' {} \;
+  fi
+
+fi
+
+}
+
 # Functions (Part 2 - for patching SE Linux)
 
 sepolicy_patch() {
@@ -363,8 +408,6 @@ sepolicy_patch() {
 # The sepolicy_patch has some of the same logic as the main script.
 # It copies su etc. to a temp. directory and then bind mounts it.
 # This is so we can patch selinux without having to reboot the Chromebook first.
-
-
 
 download_supersu() {
 
@@ -496,11 +539,9 @@ setenforce 0
 #echo "Copying contents of existing /system/xbin and /system/lib"
 echo "Copying contents of existing Android /system/lib to /opt/google/containers/android/rootfs/android-data/data/adb/su/lib"
 
-
 cp -a -r /opt/google/containers/android/rootfs/root/system/lib/. /opt/google/containers/android/rootfs/android-data/data/adb/su/lib/.
 #cp -a -r /opt/google/containers/android/rootfs/root/system/xbin/. /opt/google/containers/android/rootfs/android-data/data/adb/su/xbin/.
 echo "Copying contents of existing Android /sbin to /opt/google/containers/android/rootfs/android-data/data/adb/su/bin"
-
 
 cp -a -r /opt/google/containers/android/rootfs/root/sbin/. /opt/google/containers/android/rootfs/android-data/data/adb/su/bin/.
 
@@ -616,17 +657,6 @@ else
     sleep 0.2
     echo "SE Linux policy patching completed!"
     
- # If we downloaded Busybox earlier, we may as well copy it to /system (although we don't need to for the purpose of this script).
-
-#if [ -e /tmp/aroc/busybox ]; then
-#  echo "Copying BusyBox to /system/xbin"
-#  cp  /tmp/aroc/busybox $system/xbin
-#  chown 655360 $system/xbin/busybox
-#  chgrp 655360 $system/xbin/busybox
-#  chmod a+x $system/xbin/busybox
-#fi
-
-
     echo "Rebooting the Android container"
     printf "reboot" | android-sh 2>/dev/null
     else
@@ -695,7 +725,7 @@ if [ -L /opt/google/containers/android/system.raw.img ]; then
   echo
   echo "WARNING: The file at /opt/google/containers/android/system.raw.img is already a symlink!"
   sleep 2
-  echo 
+  echo
   echo "Should Android apps fail to load after this, restore the original container from backup and reboot before trying again."
   sleep 0.2
   echo "You can usually restore the original (stock) Android container from the backup by entering the following (all one line):"
@@ -841,8 +871,8 @@ else
 
 echo "Copying Android system files"
 
-# We should be able to copy files/dirs in 'Enforcing' mode by mounting with -o fscontext.
-# Directories mounted with special contexts:
+# We should be able to copy files/dirs, preserving original contexts, despite being in 'Enforcing' mode if we mount with -o fscontext.
+# Directories with special contexts:
     
           #u:object_r:cgroup:s0 acct
           #u:object_r:device:s0 dev
@@ -987,7 +1017,7 @@ cd $system/priv-app/SuperSU
 
 sleep 0.2
 
-# For arm Chromebooks we need /armv7/su, but for for Intel Chromebooks we need /x86/su.pie
+# For arm Chromebooks we need /armv7/su, but for for Intel we need /x86/su.pie
 
 case "$ANDROID_ARCH" in
 armv7)
@@ -1085,6 +1115,8 @@ echo "Adding 'import /init.super.rc' to existing init.rc"
 sed -i '7iimport /init.super.rc' $system/../init.rc
 
 # SuperSU copying script ends
+
+copy_busybox
 
 echo
 
