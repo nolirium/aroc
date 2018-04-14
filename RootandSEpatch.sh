@@ -140,7 +140,7 @@ echo "Creating new Android system image at /usr/local/Android_Images/system.raw.
 rm -rf  /usr/local/Android_Images/system.raw.expanded.img
 
 # Previous version of file creation used dd
-# IT's much faster if we use fallocate and starts off sparse so uses only as much space on disk as necessary.
+# It's much faster if we use fallocate and starts off sparse, so uses only as much space on disk as necessary.
 
 if [ $ANDROID_ARCH=armv7 ]; then
   cd /usr/local/Android_Images
@@ -177,8 +177,8 @@ mkfs ext4 -F /usr/local/Android_Images/system.raw.expanded.img 2>/dev/null
 
 download_busybox () {
   
-# Since there doesn't appear to be a built-in zip uncompresser available on the command line, if we need to download SuperSU,
-# we download BusyBox in order to unzip it. We could also install BusyBox in Android w/ its symlinks later, if we want.
+# Since there doesn't appear to be a built-in zip uncompressor available on the command line, if we need to download SuperSU,
+# we download BusyBox in order to unzip it. We will also install BusyBox into Android's system/xbin.
 
 if [ ! -e /usr/local/bin/busybox ]; then
   echo "Downloading BusyBox"
@@ -186,22 +186,22 @@ if [ ! -e /usr/local/bin/busybox ]; then
   cd /tmp/aroc
 
   if [ $ANDROID_ARCH=armv7 ]; then
-   curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-armv6l -o busybox
+    curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-armv6l -o busybox
   else
   
     if [ ANDROID_ARCH=x86 ]; then
 
-# Commenting out the x64 version as most x64 systems still use a 32 bit Android container
-# So if we use the 32 bit BusyBox, copying it to Android will work
+# Commenting out the x64 version as most x64 systems still use a 32 bit Android container.
+# So if we use the 32 bit BusyBox, copying it to Android will work.
 #     curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-x86_64 -o busybox
-     curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-i686 -o busybox
+      curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-i686 -o busybox
 
     else
-     echo "Error!"
-     echo "Unable to detect correct architecture!"
-     echo
-     exit 1
-     echo
+      echo "Error!"
+      echo "Unable to detect correct architecture!"
+      echo
+      exit 1
+      echo
     fi
   
   fi
@@ -216,33 +216,35 @@ fi
 }
 
 download_supersu() {
+	supersu_url="https://download.chainfire.eu/1220/SuperSU/SR5-SuperSU-v2.82-SR5-20171001224502.zip?retrieve_file=1"
+	supersu_correct_size=6882992
 
-echo "Downloading SuperSU-v2.82-SR3"
-mkdir -p /tmp/aroc
-cd /tmp/aroc
-curl https://download.chainfire.eu/1122/SuperSU/SR3-SuperSU-v2.82-SR3-20170813133244.zip?retrieve_file=1 -o SuperSU.zip
+	echo "Downloading SuperSU-v2.82-SR5"
+	mkdir -p /tmp/aroc
+	cd /tmp/aroc
+	curl "$supersu_url" -o SuperSU.zip
 
-# Check filesize
-supersu_size=$(stat -c %s /tmp/aroc/SuperSU.zip)
+	# Check filesize
+	supersu_size=$(stat -c %s /tmp/aroc/SuperSU.zip)
 
-if [ $supersu_size = 6918737 ]; then
-  echo "Unzipping SuperSU zip, and copying required directories to ~/Downloads."
-  /usr/local/bin/busybox unzip SuperSU.zip
-  else
-  echo "Unexpected file size. Trying again..."
-  curl https://download.chainfire.eu/1122/SuperSU/SR3-SuperSU-v2.82-SR3-20170813133244.zip?retrieve_file=1 -o SuperSU.zip
-fi
+	if [ "$supersu_size" = "$supersu_correct_size" ]; then
+		echo "Unzipping SuperSU zip, and copying required directories to ~/Downloads."
+		/usr/local/bin/busybox unzip SuperSU.zip
+	else
+		echo "Unexpected file size. Trying again..."
+		curl "$supersu_url" -o SuperSU.zip
+	fi
 
-# Check filesize again...
-supersu_size=$(stat -c %s /tmp/aroc/SuperSU.zip)
+	# Check filesize again...
+	supersu_size=$(stat -c %s /tmp/aroc/SuperSU.zip)
 
-if [ $supersu_size = 6918737 ]; then
-  echo "Unzipping SuperSU zip, and copying required directories to ~/Downloads."
-  /usr/local/bin/busybox unzip SuperSU.zip
-  else
-  echo "Unexpected file size again! You can manually download the SuperSU zip and extract its directories to ~/Downloads. Then run this script again."
-  exit 1
-fi
+	if [ "$supersu_size" = "$supersu_correct_size" ]; then
+		echo "Unzipping SuperSU zip, and copying required directories to ~/Downloads."
+		/usr/local/bin/busybox unzip SuperSU.zip
+	else
+		echo "Unexpected file size again! You can manually download the SuperSU zip and extract its directories to ~/Downloads. Then run this script again."
+		exit 1
+	fi
 
 # Copy the required files over to ~/Downloads
 
@@ -273,45 +275,45 @@ copy_su_armv7() {
   
 echo "Copying su to system/xbin/su,daemonsu,sugote, and setting permissions and contexts"
 
-cd $system/xbin
+cd $arc_system/xbin
 
-  cp $SU_ARCHDIR/su $system/xbin/su
-  cp $SU_ARCHDIR/su $system/xbin/daemonsu
-  cp $SU_ARCHDIR/su $system/xbin/sugote
+  cp $SU_ARCHDIR/su $arc_system/xbin/su
+  cp $SU_ARCHDIR/su $arc_system/xbin/daemonsu
+  cp $SU_ARCHDIR/su $arc_system/xbin/sugote
 
-  chmod 0755 $system/xbin/su
-  chmod 0755 $system/xbin/daemonsu
-  chmod 0755 $system/xbin/sugote
+  chmod 0755 $arc_system/xbin/su
+  chmod 0755 $arc_system/xbin/daemonsu
+  chmod 0755 $arc_system/xbin/sugote
   
-  chown 655360 $system/xbin/su
-  chown 655360 $system/xbin/daemonsu
-  chown 655360 $system/xbin/sugote
+  chown 655360 $arc_system/xbin/su
+  chown 655360 $arc_system/xbin/daemonsu
+  chown 655360 $arc_system/xbin/sugote
   
-  chgrp 655360 $system/xbin/su
-  chgrp 655360 $system/xbin/daemonsu
-  chgrp 655360 $system/xbin/sugote
+  chgrp 655360 $arc_system/xbin/su
+  chgrp 655360 $arc_system/xbin/daemonsu
+  chgrp 655360 $arc_system/xbin/sugote
 
-  chcon u:object_r:system_file:s0 $system/xbin/su
-  chcon u:object_r:system_file:s0 $system/xbin/daemonsu
-  chcon u:object_r:zygote_exec:s0 $system/xbin/sugote
+  chcon u:object_r:system_file:s0 $arc_system/xbin/su
+  chcon u:object_r:system_file:s0 $arc_system/xbin/daemonsu
+  chcon u:object_r:zygote_exec:s0 $arc_system/xbin/sugote
 
 sleep 0.2
 
 echo "Creating directory system/bin/.ext/.su"
 
-cd $system/bin
+cd $arc_system/bin
 
-  mkdir -p $system/bin/.ext
+  mkdir -p $arc_system/bin/.ext
 
 echo "Copying su to system/bin/.ext/.su and setting permissions and contexts"
 
-cd $system/bin/.ext
+cd $arc_system/bin/.ext
 
-  cp $SU_ARCHDIR/su $system/bin/.ext/.su
-  chmod 0755 $system/bin/.ext/.su
-  chcon u:object_r:system_file:s0 $system/bin/.ext/.su
-  chown 655360 $system/bin/.ext/.su
-  chgrp 655360 $system/bin/.ext/.su
+  cp $SU_ARCHDIR/su $arc_system/bin/.ext/.su
+  chmod 0755 $arc_system/bin/.ext/.su
+  chcon u:object_r:system_file:s0 $arc_system/bin/.ext/.su
+  chown 655360 $arc_system/bin/.ext/.su
+  chgrp 655360 $arc_system/bin/.ext/.su
 
 }
 
@@ -319,45 +321,45 @@ copy_su_x86() {
 
 echo "Copying su to system/xbin/su,daemonsu,sugote, and setting permissions and contexts"
 
-cd $system/xbin
+cd $arc_system/xbin
 
-  cp $SU_ARCHDIR/su.pie $system/xbin/su
-  cp $SU_ARCHDIR/su.pie $system/xbin/daemonsu
-  cp $SU_ARCHDIR/su.pie $system/xbin/sugote
+  cp $SU_ARCHDIR/su.pie $arc_system/xbin/su
+  cp $SU_ARCHDIR/su.pie $arc_system/xbin/daemonsu
+  cp $SU_ARCHDIR/su.pie $arc_system/xbin/sugote
 
-  chmod 0755 $system/xbin/su
-  chmod 0755 $system/xbin/daemonsu
-  chmod 0755 $system/xbin/sugote
+  chmod 0755 $arc_system/xbin/su
+  chmod 0755 $arc_system/xbin/daemonsu
+  chmod 0755 $arc_system/xbin/sugote
   
-  chown 655360 $system/xbin/su
-  chown 655360 $system/xbin/daemonsu
-  chown 655360 $system/xbin/sugote
+  chown 655360 $arc_system/xbin/su
+  chown 655360 $arc_system/xbin/daemonsu
+  chown 655360 $arc_system/xbin/sugote
   
-  chgrp 655360 $system/xbin/su
-  chgrp 655360 $system/xbin/daemonsu
-  chgrp 655360 $system/xbin/sugote
+  chgrp 655360 $arc_system/xbin/su
+  chgrp 655360 $arc_system/xbin/daemonsu
+  chgrp 655360 $arc_system/xbin/sugote
 
-  chcon u:object_r:system_file:s0 $system/xbin/su
-  chcon u:object_r:system_file:s0 $system/xbin/daemonsu
-  chcon u:object_r:zygote_exec:s0 $system/xbin/sugote
+  chcon u:object_r:system_file:s0 $arc_system/xbin/su
+  chcon u:object_r:system_file:s0 $arc_system/xbin/daemonsu
+  chcon u:object_r:zygote_exec:s0 $arc_system/xbin/sugote
 
 sleep 0.2
 
 echo "Creating directory system/bin/.ext/.su"
 
-cd $system/bin
+cd $arc_system/bin
 
-  mkdir -p $system/bin/.ext
+  mkdir -p $arc_system/bin/.ext
 
 echo "Copying su to system/bin/.ext/.su and setting permissions and contexts"
 
-cd $system/bin/.ext
+cd $arc_system/bin/.ext
 
-  cp $SU_ARCHDIR/su.pie $system/bin/.ext/.su
-  chmod 0755 $system/bin/.ext/.su
-  chcon u:object_r:system_file:s0 $system/bin/.ext/.su
-  chown 655360 $system/bin/.ext/.su
-  chgrp 655360 $system/bin/.ext/.su
+  cp $SU_ARCHDIR/su.pie $arc_system/bin/.ext/.su
+  chmod 0755 $arc_system/bin/.ext/.su
+  chcon u:object_r:system_file:s0 $arc_system/bin/.ext/.su
+  chown 655360 $arc_system/bin/.ext/.su
+  chgrp 655360 $arc_system/bin/.ext/.su
 
 }
 
@@ -365,17 +367,17 @@ cd $system/bin/.ext
 copy_busybox()
 
 {
-   # If we downloaded Busybox earlier, we may as well copy it to /system (although we don't need to for the purpose of this script).
+   # If we downloaded Busybox earlier, we may as well copy it to /system/xbin (although we don't need to for the purpose of this script).
    
 echo "Attempting to install BusyBox into Android container"
 
 if [ -e /tmp/aroc/busybox ] ; then
   echo "Copying BusyBox to /system/xbin"
-  cp  /tmp/aroc/busybox $system/xbin
-  chown 655360 $system/xbin/busybox
-  chgrp 655360 $system/xbin/busybox
-  chmod a+x $system/xbin/busybox
-  cd $system/xbin/
+  cp  /tmp/aroc/busybox $arc_system/xbin
+  chown 655360 $arc_system/xbin/busybox
+  chgrp 655360 $arc_system/xbin/busybox
+  chmod a+x $arc_system/xbin/busybox
+  cd $arc_system/xbin/
 
   echo "Executing './busybox --install -s ../xbin'"
   ./busybox --install -s ../xbin
@@ -385,11 +387,11 @@ if [ -e /tmp/aroc/busybox ] ; then
 else
 
   if [ -e /usr/local/bin/busybox ] ; then
-    cp  /usr/local/bin/busybox $system/xbin
-    chown 655360 $system/xbin/busybox
-    chgrp 655360 $system/xbin/busybox
-    chmod a+x $system/xbin/busybox
-    cd $system/xbin/
+    cp  /usr/local/bin/busybox $arc_system/xbin
+    chown 655360 $arc_system/xbin/busybox
+    chgrp 655360 $arc_system/xbin/busybox
+    chmod a+x $arc_system/xbin/busybox
+    cd $arc_system/xbin/
 
     echo "Executing './busybox --install -s ../xbin'"
     ./busybox --install -s ../xbin
@@ -409,82 +411,31 @@ sepolicy_patch() {
 # It copies su etc. to a temp. directory and then bind mounts it.
 # This is so we can patch selinux without having to reboot the Chromebook first.
 
-download_supersu() {
-
-echo "Downloading SuperSU-v2.82-SR3"
-mkdir -p /tmp/aroc
-cd /tmp/aroc
-curl https://download.chainfire.eu/1122/SuperSU/SR3-SuperSU-v2.82-SR3-20170813133244.zip?retrieve_file=1 -o SuperSU.zip
-
-# Check filesize
-supersu_size=$(stat -c %s /tmp/aroc/SuperSU.zip)
-
-if [ $supersu_size = 6918737 ]; then
-  echo "Unzipping SuperSU zip, and copying required directories to ~/Downloads."
-  /usr/local/bin/busybox unzip SuperSU.zip
-  else
-  echo "Unexpected file size. Trying again..."
-  curl https://download.chainfire.eu/1122/SuperSU/SR3-SuperSU-v2.82-SR3-20170813133244.zip?retrieve_file=1 -o SuperSU.zip
-fi
-
-# Check filesize again...
-supersu_size=$(stat -c %s /tmp/aroc/SuperSU.zip)
-
-if [ $supersu_size = 6918737 ]; then
-  echo "Unzipping SuperSU zip, and copying required directories to ~/Downloads."
-  /usr/local/bin/busybox unzip SuperSU.zip
-  else
-  echo "Unexpected file size again! You can manually download the SuperSU zip and extract its directories to ~/Downloads. Then run this script again."
-  exit 1
-fi
-
-# Copy the required files over to ~/Downloads
-
-cp -r -a common /home/chronos/user/Downloads
-  
-if [ $ANDROID_ARCH=armv7 ]; then
-  cp -r -a armv7 /home/chronos/user/Downloads
-  else
-    
-  if [ $ANDROID_ARCH=x86 ]; then
-    cp -r -a x86 /home/chronos/user/Downloads
-    else
-    echo "Error!"
-    echo "Unable to detect correct architecture!"
-    echo
-    exit 1
-    echo
-  fi
-  
-fi
-
-}
-
 copy_su_armv7_temp() {
   
 echo "Copying su to /opt/google/containers/android/rootfs/android-data/data/adb/su/bin/su, and setting permissions and contexts"
 
-cd $system/bin
+cd $arc_system_temp/bin
 
-  cp $SU_ARCHDIR/su $system/bin/su
-  cp $SU_ARCHDIR/su $system/bin/daemonsu
-  cp $SU_ARCHDIR/su $system/bin/sugote
+  cp $SU_ARCHDIR/su $arc_system_temp/bin/su
+  cp $SU_ARCHDIR/su $arc_system_temp/bin/daemonsu
+  cp $SU_ARCHDIR/su $arc_system_temp/bin/sugote
 
-  chmod 0755 $system/bin/su
-  chmod 0755 $system/bin/daemonsu
-  chmod 0755 $system/bin/sugote
+  chmod 0755 $arc_system_temp/bin/su
+  chmod 0755 $arc_system_temp/bin/daemonsu
+  chmod 0755 $arc_system_temp/bin/sugote
   
-  chown 655360 $system/bin/su
-  chown 655360 $system/bin/daemonsu
-  chown 655360 $system/bin/sugote
+  chown 655360 $arc_system_temp/bin/su
+  chown 655360 $arc_system_temp/bin/daemonsu
+  chown 655360 $arc_system_temp/bin/sugote
   
-  chgrp 655360 $system/bin/su
-  chgrp 655360 $system/bin/daemonsu
-  chgrp 655360 $system/bin/sugote
+  chgrp 655360 $arc_system_temp/bin/su
+  chgrp 655360 $arc_system_temp/bin/daemonsu
+  chgrp 655360 $arc_system_temp/bin/sugote
 
-  chcon u:object_r:system_file:s0 $system/bin/su
-  chcon u:object_r:system_file:s0 $system/bin/daemonsu
-  chcon u:object_r:zygote_exec:s0 $system/bin/sugote
+  chcon u:object_r:system_file:s0 $arc_system_temp/bin/su
+  chcon u:object_r:system_file:s0 $arc_system_temp/bin/daemonsu
+  chcon u:object_r:zygote_exec:s0 $arc_system_temp/bin/sugote
   
 }
 
@@ -492,27 +443,27 @@ copy_su_x86_temp() {
 
 echo "Copying su to /opt/google/containers/android/rootfs/android-data/data/adb/su/bin/su, and setting permissions and contexts"
 
-cd $system/bin
+cd $arc_system_temp/bin
 
-  cp $SU_ARCHDIR/su.pie $system/bin/su
-  cp $SU_ARCHDIR/su.pie $system/bin/daemonsu
-  cp $SU_ARCHDIR/su.pie $system/bin/sugote
+  cp $SU_ARCHDIR/su.pie $arc_system_temp/bin/su
+  cp $SU_ARCHDIR/su.pie $arc_system_temp/bin/daemonsu
+  cp $SU_ARCHDIR/su.pie $arc_system_temp/bin/sugote
 
-  chmod 0755 $system/bin/su
-  chmod 0755 $system/bin/daemonsu
-  chmod 0755 $system/bin/sugote
+  chmod 0755 $arc_system_temp/bin/su
+  chmod 0755 $arc_system_temp/bin/daemonsu
+  chmod 0755 $arc_system_temp/bin/sugote
   
-  chown 655360 $system/bin/su
-  chown 655360 $system/bin/daemonsu
-  chown 655360 $system/bin/sugote
+  chown 655360 $arc_system_temp/bin/su
+  chown 655360 $arc_system_temp/bin/daemonsu
+  chown 655360 $arc_system_temp/bin/sugote
   
-  chgrp 655360 $system/bin/su
-  chgrp 655360 $system/bin/daemonsu
-  chgrp 655360 $system/bin/sugote
+  chgrp 655360 $arc_system_temp/bin/su
+  chgrp 655360 $arc_system_temp/bin/daemonsu
+  chgrp 655360 $arc_system_temp/bin/sugote
 
-  chcon u:object_r:system_file:s0 $system/bin/su
-  chcon u:object_r:system_file:s0 $system/bin/daemonsu
-  chcon u:object_r:zygote_exec:s0 $system/bin/sugote
+  chcon u:object_r:system_file:s0 $arc_system_temp/bin/su
+  chcon u:object_r:system_file:s0 $arc_system_temp/bin/daemonsu
+  chcon u:object_r:zygote_exec:s0 $arc_system_temp/bin/sugote
 
 }
 
@@ -567,9 +518,9 @@ if [ ! -e $SU_ARCHDIR ]; then
 fi
 
 common=/home/chronos/user/Downloads/common
-system=/opt/google/containers/android/rootfs/android-data/data/adb/su
+arc_system_temp=/opt/google/containers/android/rootfs/android-data/data/adb/su
 
-# For arm Chromebooks we need /armv7/su, but for for Intel Chromebooks we need /x86/su.pie
+# For arm Chromebooks we need armv7/su, but for Intel we need x86/su.pie
 
 case "$ANDROID_ARCH" in
 armv7)
@@ -585,29 +536,29 @@ esac
 
 echo "Copying supolicy to su/bin, libsupol to su/lib and setting permissions and contexts"
 
-cd $system/bin
+cd $arc_system_temp/bin
 
-  cp $SU_ARCHDIR/supolicy $system/bin/supolicy
+  cp $SU_ARCHDIR/supolicy $arc_system_temp/bin/supolicy
 
-  chmod 0755 $system/bin/supolicy
-  chown 655360 $system/bin/supolicy
-  chgrp 655360 $system/bin/supolicy
-  chcon u:object_r:system_file:s0 $system/bin/supolicy
+  chmod 0755 $arc_system_temp/bin/supolicy
+  chown 655360 $arc_system_temp/bin/supolicy
+  chgrp 655360 $arc_system_temp/bin/supolicy
+  chcon u:object_r:system_file:s0 $arc_system_temp/bin/supolicy
 
-cd $system/lib
+cd $arc_system_temp/lib
 
-  cp $SU_ARCHDIR/libsupol.so $system/lib/libsupol.so
+  cp $SU_ARCHDIR/libsupol.so $arc_system_temp/lib/libsupol.so
 
-  chmod 0644 $system/lib/libsupol.so
-  chown 655360 $system/lib/libsupol.so
-  chgrp 655360 $system/lib/libsupol.so
-  chcon u:object_r:system_file:s0 $system/lib/libsupol.so
+  chmod 0644 $arc_system_temp/lib/libsupol.so
+  chown 655360 $arc_system_temp/lib/libsupol.so
+  chgrp 655360 $arc_system_temp/lib/libsupol.so
+  chcon u:object_r:system_file:s0 $arc_system_temp/lib/libsupol.so
   
 #echo "Temporarily bind mounting su/xbin and su/lib within the Android container."
 
-echo "Attempting to bind mount temp dir su/bin to /sbin within the Android container."
+echo "Attempting to bind mount temp dir /data/adb/su/bin to /sbin within the Android container."
 printf "mount -o bind /data/adb/su/bin /sbin " | android-sh
-echo "Attempting to bind mount temp dir su/lib to /system/lib within the Android container."
+echo "Attempting to bind mount temp dir /data/adb/su/lib to /system/lib within the Android container."
 printf "mount -o bind /data/adb/su/lib /system/lib"  | android-sh
 
 echo
@@ -653,7 +604,6 @@ else
     echo "Copying patched policy from /home/chronos/user/Downloads/policy.30_out to /etc/selinux/arc/policy/policy.30"
     cp -a /home/chronos/user/Downloads/policy.30_out /etc/selinux/arc/policy/policy.30
     
-
     sleep 0.2
     echo "SE Linux policy patching completed!"
     
@@ -697,7 +647,7 @@ check_if_root
 echo "Rooting scripts for Android on Chrome OS"
 sleep 0.02
 echo
-echo "Version 0.25"
+echo "Version 0.26"
 sleep 0.02
 echo
 echo "Unofficial scripts to copy SuperSU files to an Android system image on Chrome OS"
@@ -706,6 +656,7 @@ echo
 echo "Be aware that modifying the system partition could cause automatic updates to fail (unlikely), may result in having to powerwash or restore from USB potentially causing loss of data! Please make sure important files are backed up."
 sleep 0.02
 echo
+
 check_writeable_rootfs
 
 # Remount the Chrome OS root drive as writeable
@@ -872,7 +823,7 @@ else
 echo "Copying Android system files"
 
 # We should be able to copy files/dirs, preserving original contexts, despite being in 'Enforcing' mode if we mount with -o fscontext.
-# Directories with special contexts:
+# Directories to mount with special contexts:
     
           #u:object_r:cgroup:s0 acct
           #u:object_r:device:s0 dev
@@ -991,29 +942,29 @@ if [ ! -e $SU_ARCHDIR ]; then
   download_supersu
 fi
               common=/home/chronos/user/Downloads/common
-              system=/usr/local/Android_Images/Mounted/system
-              #system_original=/opt/google/containers/android/rootfs/root/system
+              arc_system=/usr/local/Android_Images/Mounted/system
+              #arc_system_original=/opt/google/containers/android/rootfs/root/system
 
 echo "Now placing SuperSU files. Locations as indicated by the SuperSU update-binary script."
 sleep 0.2
 echo
 
-# Copying SuperSU files to $system
+# Copying SuperSU files to $arc_system
     
 echo "Creating SuperSU directory in system/priv-app, copying SuperSU apk, and setting its permissions and contexts"
 
-cd $system/priv-app
-  mkdir -p $system/priv-app/SuperSU
-  chown 655360 $system/priv-app/SuperSU
-  chgrp 655360 $system/priv-app/SuperSU
+cd $arc_system/priv-app
+  mkdir -p $arc_system/priv-app/SuperSU
+  chown 655360 $arc_system/priv-app/SuperSU
+  chgrp 655360 $arc_system/priv-app/SuperSU
   
-cd $system/priv-app/SuperSU
-  cp $common/Superuser.apk $system/priv-app/SuperSU/SuperSU.apk
+cd $arc_system/priv-app/SuperSU
+  cp $common/Superuser.apk $arc_system/priv-app/SuperSU/SuperSU.apk
 
-  chmod 0644 $system/priv-app/SuperSU/SuperSU.apk
-  chcon u:object_r:system_file:s0 $system/priv-app/SuperSU/SuperSU.apk
-  chown 655360 $system/priv-app/SuperSU/SuperSU.apk
-  chgrp 655360 $system/priv-app/SuperSU/SuperSU.apk
+  chmod 0644 $arc_system/priv-app/SuperSU/SuperSU.apk
+  chcon u:object_r:system_file:s0 $arc_system/priv-app/SuperSU/SuperSU.apk
+  chown 655360 $arc_system/priv-app/SuperSU/SuperSU.apk
+  chgrp 655360 $arc_system/priv-app/SuperSU/SuperSU.apk
 
 sleep 0.2
 
@@ -1033,52 +984,52 @@ esac
 
 echo "Copying supolicy to system/xbin, libsupol to system/lib and setting permissions and contexts"
 
-cd $system/xbin
+cd $arc_system/xbin
 
-  cp $SU_ARCHDIR/supolicy $system/xbin/supolicy
+  cp $SU_ARCHDIR/supolicy $arc_system/xbin/supolicy
 
-  chmod 0755 $system/xbin/supolicy
-  chown 655360 $system/xbin/supolicy
-  chgrp 655360 $system/xbin/supolicy
-  chcon u:object_r:system_file:s0 $system/xbin/supolicy
+  chmod 0755 $arc_system/xbin/supolicy
+  chown 655360 $arc_system/xbin/supolicy
+  chgrp 655360 $arc_system/xbin/supolicy
+  chcon u:object_r:system_file:s0 $arc_system/xbin/supolicy
 
-cd $system/lib
+cd $arc_system/lib
 
-  cp $SU_ARCHDIR/libsupol.so $system/lib/libsupol.so
+  cp $SU_ARCHDIR/libsupol.so $arc_system/lib/libsupol.so
 
-  chmod 0644 $system/lib/libsupol.so
-  chown 655360 $system/lib/libsupol.so
-  chgrp 655360 $system/lib/libsupol.so
-  chcon u:object_r:system_file:s0 $system/lib/libsupol.so
+  chmod 0644 $arc_system/lib/libsupol.so
+  chown 655360 $arc_system/lib/libsupol.so
+  chgrp 655360 $arc_system/lib/libsupol.so
+  chcon u:object_r:system_file:s0 $arc_system/lib/libsupol.so
   
 sleep 0.2
 
 echo "Copying sh from system/bin/sh to system/xbin/sugote-mksh and setting permissions and contexts"
 
-cd $system/bin
+cd $arc_system/bin
 
-  cp $system/bin/sh ../xbin/sugote-mksh
+  cp $arc_system/bin/sh ../xbin/sugote-mksh
 
-cd $system/xbin
+cd $arc_system/xbin
 
-  chmod 0755 $system/xbin/sugote-mksh
-  chcon u:object_r:system_file:s0 $system/xbin/sugote-mksh
+  chmod 0755 $arc_system/xbin/sugote-mksh
+  chcon u:object_r:system_file:s0 $arc_system/xbin/sugote-mksh
   
 echo "Adding extra files system/etc/.installed_su_daemon and system/etc/install-recovery.sh"
 
-cd $system/etc
+cd $arc_system/etc
 
-  touch  $system/etc/.installed_su_daemon
+  touch  $arc_system/etc/.installed_su_daemon
 
-  chmod 0644  $system/etc/.installed_su_daemon
-  chcon u:object_r:system_file:s0  $system/etc/.installed_su_daemon
+  chmod 0644  $arc_system/etc/.installed_su_daemon
+  chcon u:object_r:system_file:s0  $arc_system/etc/.installed_su_daemon
 
-  cp $common/install-recovery.sh  $system/etc/install-recovery.sh
+  cp $common/install-recovery.sh  $arc_system/etc/install-recovery.sh
   
-  chmod 0755  $system/etc/install-recovery.sh
-  chown 655360 $system/etc/install-recovery.sh
-  chgrp 655360 $system/etc/install-recovery.sh
-  chcon u:object_r:toolbox_exec:s0  $system/etc/install-recovery.sh
+  chmod 0755  $arc_system/etc/install-recovery.sh
+  chown 655360 $arc_system/etc/install-recovery.sh
+  chgrp 655360 $arc_system/etc/install-recovery.sh
+  chcon u:object_r:toolbox_exec:s0  $arc_system/etc/install-recovery.sh
 
 echo "Symlinking system/bin/install-recovery.sh to system/etc/install-recovery.sh"
 
@@ -1086,21 +1037,21 @@ echo "Symlinking system/bin/install-recovery.sh to system/etc/install-recovery.s
   
 echo "Adding system/bin/daemonsu-service.sh"
 
-cp $common/install-recovery.sh  $system/bin/daemonsu-service.sh
+cp $common/install-recovery.sh  $arc_system/bin/daemonsu-service.sh
   
-chmod 0755  $system/bin/daemonsu-service.sh
-chown 655360 $system/bin/daemonsu-service.sh
-chgrp 657360 $system/bin/daemonsu-service.sh
+chmod 0755  $arc_system/bin/daemonsu-service.sh
+chown 655360 $arc_system/bin/daemonsu-service.sh
+chgrp 657360 $arc_system/bin/daemonsu-service.sh
 
-chcon u:object_r:toolbox_exec:s0  $system/bin/daemonsu-service.sh
+chcon u:object_r:toolbox_exec:s0  $arc_system/bin/daemonsu-service.sh
 
 echo "Creating file init.super.rc in Android rootfs"
 
-touch  $system/../init.super.rc
+touch  $arc_system/../init.super.rc
 
-chmod 0750 $system/../init.super.rc
-chown 655360 $system/../init.super.rc
-chgrp 657360 $system/../init.super.rc
+chmod 0750 $arc_system/../init.super.rc
+chown 655360 $arc_system/../init.super.rc
+chgrp 657360 $arc_system/../init.super.rc
 
 echo "Adding daemonsu service to init.super.rc"
 
@@ -1108,11 +1059,11 @@ echo "service daemonsu /system/bin/daemonsu-service.sh service
     class late_start
     user root
     seclabel u:r:supersu:s0
-    oneshot" >>  $system/../init.super.rc
+    oneshot" >>  $arc_system/../init.super.rc
     
 echo "Adding 'import /init.super.rc' to existing init.rc"
 
-sed -i '7iimport /init.super.rc' $system/../init.rc
+sed -i '7iimport /init.super.rc' $arc_system/../init.rc
 
 # SuperSU copying script ends
 
