@@ -18,37 +18,37 @@ check_writeable_rootfs() {
 # TODO: Find a better way to do this, maybe.
 
 # At present, we try and create a file on the CrOS rootfs to test if rootfs verification is disabled.
-# If we can't create the file, rootfs verification likely still has yet to be switched off.
 
 touch "/.this"  2> /dev/null
 
+# If we couldn't create the file, rootfs verification likely still needs to be turned off.
 
 if [ ! -e /.this ]; then
   echo
   echo "Error!"
   echo "Unable to modify system!"
-  sleep 1
   echo
   echo
   echo "In order to modify system files, the Chrome OS system partition needs to have been mounted writeable (i.e. rootfs verification disabled)."
-  sleep 0.001
+  echo
   echo
   echo "You can disable rootfs verification by running the following command, then rebooting."
-  sleep 0.001
   echo
   echo
   echo
   echo
   echo "sudo /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification --partitions $(( $(rootdev -s | sed -r 's/.*(.)$/\1/') - 1))"
-  sleep 1
+  sleep 0.1
   echo
   echo
   echo
   echo
   echo "Alternatively, run the command below, then follow the prompt."
-  sleep 0.001
+  echo
+  echo
   echo "sudo /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification"
-  sleep 0.001
+  sleep 0.1
+  echo
   echo
   echo "Please run the "remove_rootfs_verification" command now, then reboot and run this script again."
   exit 1
@@ -69,7 +69,7 @@ mkdir -p /usr/local/Backup
 if [ -e /etc/init/arc-setup-env ]; then
   echo "Copying /etc/init/arc-setup-env to /usr/local/Backup"
   
-  sleep 0.001
+  sleep 0.1
 
   echo "Setting 'export WRITABLE_MOUNT=1', 'export ANDROID_DEBUGGABLE=1' and (if variable exists) 'export SHARE_FONTS=0' in /etc/init/arc-setup-env"
   
@@ -80,7 +80,7 @@ if [ -e /etc/init/arc-setup-env ]; then
 else
   echo "Copying /etc/init/arc-setup.conf and /etc/init/arc-system-mount.conf to /usr/local/Backup"
 
-  sleep 0.001
+  sleep 0.1
 
   echo "Setting 'env WRITABLE_MOUNT=1' in /etc/init/arc-setup.conf and /etc/init/arc-system-mount.conf"
 
@@ -95,32 +95,38 @@ else
 
   echo "Setting 'env ANDROID_DEBUGGABLE=1' in arc-setup.conf"
 
-  sed -i 's/env ANDROID_DEBUGGABLE=0/env ANDROID_DEBUGGABLE=1/g' /etc/init/arc-setup.conf  
+  sed -i 's/env ANDROID_DEBUGGABLE=0/env ANDROID_DEBUGGABLE=1/g' /etc/init/arc-setup.conf
 fi
 
 }
 
 detect_architecture() {
   
+
 # TODO: Test/improve this function
 
 #if [ -z "$ANDROID_ARCH" ]; then
-    ARCH="`uname -m`"
+#    ARCH="`uname -m`"
 #fi
+
+# Different method 
+
+ ARCH="`printf "getprop ro.product.cpu.abi" | android-sh`"
+ 
 case "$ARCH" in
 x86 | i?86) ANDROID_ARCH="x86";;
 x86_64 | amd64) ANDROID_ARCH="x86";;
 armel) ANDROID_ARCH="armel";;
 arm64 | aarch64) ANDROID_ARCH="armv7";;
 arm*) ANDROID_ARCH="armv7";;
-*) error 2 "Invalid architecture '$ARCH'.";;
+*) error 2 "Unable to detect a valid CPU architecture. Is Android running?";;
 esac
 
 }
 
 create_image() {
 
-# This creates and formats a blank sparse 2GB ext4 image.
+# This creates a blank ext4 image, formats and converts to sparse.
 
 # Make some working directories if they don't already exist.
 
@@ -128,39 +134,44 @@ mkdir -p /usr/local/Android_Images
 mkdir -p /usr/local/Android_Images/Mounted
 mkdir -p /usr/local/Android_Images/Original
 
-echo
 echo "Creating new Android system image at /usr/local/Android_Images/system.raw.expanded.img"
+echo
+echo
 
 # Make the image.
-# For arm, the unsquashed image needs to be at least ~1.2GB (~800MB for Marshmallow).
-# For x86, the unsquashed image needs to be at least ~1.86B (~1GB for Marshmallow).
+# For arm, the unsquashed image needs to be at least ~1.3GB (~800MB for Marshmallow).
+# For x86, the unsquashed image needs to be at least ~1.8GB (~1GB for Marshmallow).
+# And for x86-64 containers (e,g, PixelBook), it apparently needs to be somewhat larger still.
 
-# Since the raw rootfs has increased in size lately, create a blank 2GB sparse image.
+# Since the raw rootfs has increased in size lately, create a blank sparse 2GB image, which should takes only as much space on disk as required.
 
-#if [ $ANDROID_ARCH=armv7 ]; then
-#  cd /usr/local/Android_Images
-#  dd if=/dev/zero of=system.raw.expanded.img count=2000000 bs=1024 status=progress
-#  else
-#
-#  if [ $ANDROID_ARCH=x86 ]; then
-#    cd /usr/local/Android_Images
-#    dd if=/dev/zero of=system.raw.expanded.img count=2000000 bs=1024 status=progress
-#
-#    else
-#    echo "Error!"
-#    echo "Unable to detect correct architecture!"
-#    echo
-#    exit 1
-#  fi
-#
-#fi
+if [ $ANDROID_ARCH=armv7 ]; then
+  cd /usr/local/Android_Images
+  dd if=/dev/zero of=system.raw.expanded.img count=2200000 bs=1024 status=progress
+  else
 
-fallocate -l 2G  /usr/local/Android_Images/system.raw.expanded.img
+  if [ $ANDROID_ARCH=x86 ]; then
+    cd /usr/local/Android_Images
+    dd if=/dev/zero of=system.raw.expanded.img count=2200000 bs=1024 status=progress
 
+    else
+    echo "Error!"
+    echo "Unable to detect correct architecture!"
+    echo
+    exit 1
+  fi
+
+fi
+
+echo
 echo "Formatting system.raw.expanded.img as ext4 filesystem"
 echo
 
-mkfs ext4 -F /usr/local/Android_Images/system.raw.expanded.img 2>/dev/null
+mkfs ext4 -F /usr/local/Android_Images/system.raw.expanded.img
+
+echo "Converting system.raw.expanded.img to sparse image"
+
+fallocate -d /usr/local/Android_Images/system.raw.expanded.img
 
 }
 
@@ -169,30 +180,37 @@ download_busybox () {
 # Since there doesn't appear to be a built-in zip uncompresser available on the command line, if we need to download SuperSU,
 # we download BusyBox in order to unzip it. We could also install BusyBox in Android w/ its symlinks later, if we want.
 
-echo "Downloading BusyBox"
-mkdir -p /tmp/aroc
-cd /tmp/aroc
+if [ ! -e /usr/local/bin/busybox ]; then
+  echo "Downloading BusyBox"
+  mkdir -p /tmp/aroc
+  cd /tmp/aroc
 
-if [ $ANDROID_ARCH=armv7 ]; then
-  curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-armv6l -o busybox
+  if [ $ANDROID_ARCH=armv7 ]; then
+   curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-armv6l -o busybox
   else
   
-  if [ ANDROID_ARCH=x86 ]; then
-    curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-x86_64 -o busybox
-    else
-    echo "Error!"
-    echo "Unable to detect correct architecture!"
-    echo
-    exit 1
-    echo
-  fi
-  
-fi
+   if [ ANDROID_ARCH=x86 ]; then
 
-echo "Moving BusyBox to /usr/local/bin"
-mkdir -p /usr/local/bin
-mv busybox /usr/local/bin/busybox
-chmod a+x /usr/local/bin/busybox
+# Commenting out the x64 Intel version for now as most x64 systems still seem to use a 32 bit Android container.
+# So if we use the 32 bit BusyBox here, copying it to Android should also work on all machines.
+#     curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-x86_64 -o busybox
+     curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-i686 -o busybox
+
+    else
+     echo "Error!"
+     echo "Unable to detect correct architecture!"
+     echo
+     exit 1
+     echo
+    fi
+  
+  fi
+
+  echo "Moving BusyBox to /usr/local/bin"
+  mkdir -p /usr/local/bin
+  mv busybox /usr/local/bin/busybox
+  chmod a+x /usr/local/bin/busybox
+fi
 
 }
 
@@ -250,7 +268,7 @@ fi
 }
 
 # The following two functions simply copy the architecture-dependent su binary to /system.
-# For arm Chromebooks we need /armv7/su, but for Intel Chromebooks we need /x86/su.pie 
+# For arm Chromebooks we need /armv7/su, but for Intel Chromebooks we need /x86/su.pie
 
 copy_su_armv7() {
   
@@ -278,7 +296,7 @@ cd $system/xbin
   chcon u:object_r:system_file:s0 $system/xbin/daemonsu
   chcon u:object_r:zygote_exec:s0 $system/xbin/sugote
 
-sleep 0.001
+sleep 0.1
 
 echo "Creating directory system/bin/.ext/.su"
 
@@ -296,7 +314,7 @@ cd $system/bin/.ext
   chown 655360 $system/bin/.ext/.su
   chgrp 655360 $system/bin/.ext/.su
 
-sleep 0.001
+sleep 0.1
 
 }
 
@@ -326,7 +344,7 @@ cd $system/xbin
   chcon u:object_r:system_file:s0 $system/xbin/daemonsu
   chcon u:object_r:zygote_exec:s0 $system/xbin/sugote
 
-sleep 0.001
+sleep 0.1
 
 echo "Creating directory system/bin/.ext/.su"
 
@@ -353,20 +371,20 @@ main() {
 check_if_root
 
 echo "Test Rooting scripts for Android on Chrome OS"
-sleep 0.001
+sleep 0.1
 echo
 echo "Version 0.25"
-sleep 0.001
+sleep 0.1
 echo
 echo "Unofficial scripts to copy SuperSU files to an Android system image on Chrome OS"
-sleep 0.001
+sleep 0.1
 echo
 echo "Part 1 of 2"
-sleep 0.001
+sleep 0.1
 echo
 
 echo "Be aware that modifying the system partition could cause automatic updates to fail (unlikely), may result in having to powerwash or restore from USB potentially causing loss of data! Please make sure important files are backed up."
-echo 
+echo
 
 # Remount the Chrome OS root drive as writeable
 
@@ -383,24 +401,7 @@ modify_cros_files
 # First, check if symlink already exists.
 
 if [ -L /opt/google/containers/android/system.raw.img ]; then
-  echo  
-  echo "WARNING: The file at /opt/google/containers/android/system.raw.img is already a symlink!"
-  sleep 2
-  echo 
-  echo "Should Android apps fail to load after this, restore the original container from backup and reboot before trying again."
-  sleep 0.2
-  echo 
-  echo "You can usually restore the original (stock) Android container from the backup by entering the following (all one line):"
-  sleep 0.2
-  echo 
-  echo
-  echo "sudo mv /opt/google/containers/android/system.raw.img.bk /opt/google/containers/android/system.raw.img"
-  sleep 0.2
-  echo 
-  echo
-  echo "Press Ctrl+C to cancel, if you want to do this now."
-  sleep 5
-  echo 
+  echo "The file at /opt/google/containers/android/system.raw.img is already a symlink!"
 
 # If the file is already a symlink, we need to check if a backup of the original system.raw.img exists
 
@@ -426,7 +427,7 @@ if [ ! -e /opt/google/containers/android/system.raw.img ]; then
     echo "Using /opt/google/containers/android/system.raw.img.bk"
   else
 
-# In case the backup has been deleted from its usual place (e.g. to save space), check if system.raw.img is present in ~/Downloads.
+# In case the backup has been deleted from its usual place (e.g. to save space), check if one is present in ~/Downloads.
 
     if [ -f /home/chronos/user/Downloads/system.raw.img ]; then
       echo "Using /home/chronos/user/Downloads/system.raw.img"
@@ -649,7 +650,7 @@ if [ ! -e /home/chronos/user/Downloads/common ]; then
   
 fi
 
-sleep 0.001
+sleep 0.1
 
 cd /usr/local/Android_Images
 mkdir -p /usr/local/Android_Images/Mounted
@@ -699,16 +700,15 @@ if [ -e /tmp/aroc/busybox ]; then
   chmod a+x $system/xbin/busybox
 fi
 
-echo 
 echo "Now placing SuperSU files. Locations as indicated by the SuperSU update-binary script."
 
-sleep 0.001
+sleep 0.1
+
+echo
 
 # Copy SuperSU files to $system
     
 echo "Creating SuperSU directory in system/priv-app, copying SuperSU apk, and setting its permissions and contexts"
-
-sleep 0.001
 
 cd $system/priv-app
   mkdir -p $system/priv-app/SuperSU
@@ -722,6 +722,8 @@ cd $system/priv-app/SuperSU
   chcon u:object_r:system_file:s0 $system/priv-app/SuperSU/SuperSU.apk
   chown 655360 $system/priv-app/SuperSU/SuperSU.apk
   chgrp 655360 $system/priv-app/SuperSU/SuperSU.apk
+
+sleep 0.1
 
 # For arm Chromebooks we need /armv7/su, but for for Intel Chromebooks we need /x86/su.pie
 
@@ -738,8 +740,6 @@ copy_su_x86
 esac
 
 echo "Copying supolicy to system/xbin, libsupol to system/lib and setting permissions and contexts"
-
-sleep 0.001
 
 cd $system/xbin
 
@@ -759,9 +759,9 @@ cd $system/lib
   chgrp 655360 $system/lib/libsupol.so
   chcon u:object_r:system_file:s0 $system/lib/libsupol.so
   
-echo "Copying sh from system/bin/sh to system/xbin/sugote-mksh and setting permissions and contexts"
+sleep 0.1
 
-sleep 0.001
+echo "Copying sh from system/bin/sh to system/xbin/sugote-mksh and setting permissions and contexts"
 
 cd $system/bin
 
@@ -772,8 +772,8 @@ cd $system/xbin
   chmod 0755 $system/xbin/sugote-mksh
   chcon u:object_r:system_file:s0 $system/xbin/sugote-mksh
   
-# Hijacking app_process (below) worked on Marshmallow. Does not work on N.
-# One approach that works on Nougat: modifying init.*.rc instead.
+# Hijacking app_process (below) worked on Marshmallow. Does not aooear to work on N.
+# One approach that does work on Nougat: modifying init.*.rc instead.
   
 #echo "Moving app_process32"
 
@@ -859,15 +859,13 @@ sed -i '7iimport /init.super.rc' $system/../init.rc
 # SuperSU copying script ends
 
 echo "Removing temporary files"
-sleep 0.001
 rm -rf /tmp/aroc
 echo
 echo "Done!"
-sleep 0.001
 echo
 echo "Please check the output of this script for any errors."
 
-sleep 0.001
+sleep 0.1
 
 echo
 echo "Please reboot now, then run script 02SEPatch.sh."
