@@ -17,72 +17,78 @@ check_writeable_rootfs() {
 
 # TODO: Find a better way to do this, maybe.
 
-# At present, we try and create a file on the CrOS rootfs to test if rootfs verification is disabled.
-
-touch "/.this"  2> /dev/null
-
+# At present, we try and create a file on the CrOS rootfs to see if rootfs verification is disabled.
 # If we couldn't create the file, rootfs verification likely still needs to be turned off.
 
-if [ ! -e /.this ]; then
-  echo
+if [  -e /etc/aroc_writable_test ]; then
+rm /etc/aroc_writable_test
+fi
+
+touch /etc/aroc_writable_test  2> /dev/null
+
+  if [ ! -e /etc/aroc_writable_test ]; then
   echo "Error!"
   echo "Unable to modify system!"
-  echo
-  echo
-  echo "In order to modify system files, the Chrome OS system partition needs to have been mounted writeable (i.e. rootfs verification disabled)."
-  echo
-  echo
   echo "You can disable rootfs verification by running the following command, then rebooting."
-  echo
-  echo
-  echo
-  echo
   echo "sudo /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification --partitions $(( $(rootdev -s | sed -r 's/.*(.)$/\1/') - 1))"
-  sleep 0.1
-  echo
-  echo
-  echo
-  echo
-  echo "Alternatively, run the command below, then follow the prompt."
-  echo
-  echo
-  echo "sudo /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification"
-  sleep 0.1
-  echo
-  echo
   echo "Please run the "remove_rootfs_verification" command now, then reboot and run this script again."
   exit 1
 fi
 
-rm /.this
+rm /etc/aroc_writable_test
 
 }
 
 modify_cros_files() {
-
-# Just changing two/three environment variables for Android in /etc/init here.
-# Recent versions of CrOS have Android envs in arc-setup-env.
-# Older versions had envs in the .conf files
+  
+# Just changing two environment variables for Android here.
+# In CrOS v70, the writeable container and debug flags have moved (again); they are now in "/usr/share/arc-setup/config.json"
+# (Older versions of CrOS have/had Android envs in arc-setup-env).
+# (Even older versions had envs in the .conf files.)
 
 mkdir -p /usr/local/Backup
+
+# As of CrOS v70, we need to modify the two values in /usr/share/arc-setup/config.json
+if [ -e /usr/share/arc-setup/config.json ]; then
+
+  mkdir -p /usr/local/Backup/arc-setup
+  echo "Copying usr/share/arc-setup/config.json to /usr/local/Backup/arc-setup/config.json.old"
+
+  cp -a /usr/share/arc-setup/config.json /usr/local/Backup/arc-setup/config.json.old
+  cp -a /usr/share/arc-setup/config.json /usr/share/arc-setup/config.json.old
+
+  echo "Setting '"ANDROID_DEBUGGABLE": true' and '"WRITABLE_MOUNT": true' in /usr/share/arc-setup/config.json"
+
+  sed -i 's/"ANDROID_DEBUGGABLE": false/"ANDROID_DEBUGGABLE": true/g' /usr/share/arc-setup/config.json 2>/dev/null
+  sed -i 's/"WRITABLE_MOUNT": false/"WRITABLE_MOUNT": true/g' /usr/share/arc-setup/config.json 2>/dev/null
+
+fi
+
+# In CrOS v6x, the two flags we want to change are within /etc/init/arc-setup-env
 
 if [ -e /etc/init/arc-setup-env ]; then
   echo "Copying /etc/init/arc-setup-env to /usr/local/Backup"
   
-  sleep 0.1
+  sleep 1
 
   echo "Setting 'export WRITABLE_MOUNT=1', 'export ANDROID_DEBUGGABLE=1' and (if variable exists) 'export SHARE_FONTS=0' in /etc/init/arc-setup-env"
   
   sed -i 's/export WRITABLE_MOUNT=0/export WRITABLE_MOUNT=1/g' /etc/init/arc-setup-env 2>/dev/null
   sed -i 's/export ANDROID_DEBUGGABLE=0/export ANDROID_DEBUGGABLE=1/g' /etc/init/arc-setup-env 2>/dev/null
+  
+# NOTE The below line (disabling shared fonts) is no longer needed as of recent CrOS versions.
+
   sed -i 's/export SHARE_FONTS=1/export SHARE_FONTS=0/g' /etc/init/arc-setup-env 2>/dev/null
-
-else
+  
+ fi
+ 
+ # In CrOS circa v55-60, we had to change the .confs directly:
+ 
+ if [ ! -e /usr/share/arc-setup/config.json ] && [ ! -e /etc/init/arc-setup-env ]; then
+ 
   echo "Copying /etc/init/arc-setup.conf and /etc/init/arc-system-mount.conf to /usr/local/Backup"
-
-  sleep 0.1
-
-  echo "Setting 'env WRITABLE_MOUNT=1' in /etc/init/arc-setup.conf and /etc/init/arc-system-mount.conf"
+  sleep 0.2
+  echo "Setting 'env WRITABLE_MOUNT=1' in /etc/init/arc-setup.conf and/or /etc/init/arc-system-mount.conf"
 
   cp -a /etc/init/arc-system-mount.conf /usr/local/Backup/arc-system-mount.conf.old
   cp -a /etc/init/arc-system-mount.conf /etc/init/arc-system-mount.conf.old
@@ -95,7 +101,7 @@ else
 
   echo "Setting 'env ANDROID_DEBUGGABLE=1' in arc-setup.conf"
 
-  sed -i 's/env ANDROID_DEBUGGABLE=0/env ANDROID_DEBUGGABLE=1/g' /etc/init/arc-setup.conf  
+  sed -i 's/env ANDROID_DEBUGGABLE=0/env ANDROID_DEBUGGABLE=1/g' /etc/init/arc-setup.conf
 fi
 
 }
@@ -367,7 +373,7 @@ check_if_root
 echo "Test Rooting scripts for Android on Chrome OS"
 sleep 0.1
 echo
-echo "Version 0.25"
+echo "Version 0.27"
 sleep 0.1
 echo
 echo "Unofficial scripts to copy SuperSU files to an Android system image on Chrome OS"
@@ -849,6 +855,13 @@ echo "service daemonsu /system/bin/daemonsu-service.sh service
 echo "Adding 'import /init.super.rc' to existing init.rc"
 
 sed -i '7iimport /init.super.rc' $system/../init.rc
+
+# In recent CrOS versions (v70+), for a writable /system, currently it also seems to be necessary to edit init.rc (to switch 'ro' to 'rw')
+
+echo "Substituting '|mount rootfs rootfs / remount bind rw' for '|mount rootfs rootfs / remount bind ro' in existing init.rc"
+echo "A backup of init.rc will be stored as init.rc.old"
+
+sed -i.old 's|mount rootfs rootfs / remount bind ro|mount rootfs rootfs / remount bind rw|g' $arc_system/../init.rc
 
 # SuperSU copying script ends
 
