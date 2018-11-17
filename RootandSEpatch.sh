@@ -15,46 +15,22 @@ fi
 
 check_writeable_rootfs() {
 
-# TODO: Find a better way to do this, maybe.
-
-if [  -e /.this ]; then
-rm /.this
+if [  -e /etc/aroc_writable_test ]; then
+rm /etc/aroc_writable_test
 fi
 
-touch "/.this"  2> /dev/null
+touch /etc/aroc_writable_test  2> /dev/null
 
-  if [ ! -e /.this ]; then
-  echo
+  if [ ! -e /etc/aroc_writable_test ]; then
   echo "Error!"
   echo "Unable to modify system!"
-  sleep 1
-  echo
-  echo
-  echo "In order to modify system files, the Chrome OS system partition needs to have been mounted writeable (i.e. rootfs verification disabled)."
-  sleep 1
-  echo
   echo "You can disable rootfs verification by running the following command, then rebooting."
-  sleep 0.0001
-  echo
-  echo
-  echo
-  echo
   echo "sudo /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification --partitions $(( $(rootdev -s | sed -r 's/.*(.)$/\1/') - 1))"
-  sleep 1
-  echo
-  echo
-  echo
-  echo
-  echo "Alternatively, run the command below, then follow the prompt."
-  echo "sudo /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification"
-  sleep 0.0001
-  echo
-  echo
   echo "Please run the "remove_rootfs_verification" command now, then reboot and run this script again."
   exit 1
 fi
 
-rm /.this
+rm /etc/aroc_writable_test
 
 }
 
