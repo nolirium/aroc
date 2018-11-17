@@ -648,7 +648,7 @@ check_if_root
 echo "Rooting scripts for Android on Chrome OS"
 sleep 0.02
 echo
-echo "Version 0.26"
+echo "Version 0.27"
 sleep 0.02
 echo
 echo "Unofficial scripts to copy SuperSU files to an Android system image on Chrome OS"
