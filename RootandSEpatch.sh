@@ -97,7 +97,7 @@ if [ -e /etc/init/arc-setup-env ]; then
  
  # In CrOS circa v55-60, we had to change the .confs directly:
  
- if [ ! -e /usr/share/arc-setup/config.json ] || [ ! -e /etc/init/arc-setup-env ]; then
+ if [ ! -e /usr/share/arc-setup/config.json ] && [ ! -e /etc/init/arc-setup-env ]; then
  
   echo "Copying /etc/init/arc-setup.conf and /etc/init/arc-system-mount.conf to /usr/local/Backup"
   sleep 0.2
