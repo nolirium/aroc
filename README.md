@@ -1,7 +1,7 @@
 # aroc
 Android Root on ChromeOS - Chrome OS shell scripts to make a R/W copy of the Android container and copy su therein.
 
-#### Note: The scripts have been tested on CrOS versions 54-67. Issues have been encountered with these scripts on a one or two older Chrome OS builds, but on most CrOS versions, everything *should* work as expected.
+#### Note: The scripts have been tested on CrOS versions 54 - 72. Issues have been encountered with these scripts on a few older Chrome OS builds, but on most CrOS versions, everything *should* work as expected.
 
 ### Prerequisites
 
@@ -59,7 +59,7 @@ To run the combined script:
 
 #### 01Root.sh
 
-Creates the directory /usr/local/Android_Images, formats a ~ 2GB sparse ext4 filesystem image in /usr/local/Android_Images therein, and copies the files from the factory shipped squashfs Android rootfs image to the new, writeable, image. Modifies Chrome OS system files in /etc/init - either arc-setup-env or arc-system-mount.conf and arc-setup.conf (as required) - changing the debuggable and mount-as-read-only flags. Renames the original filesystem image to .bk & replaces it with a symlink to the newly-created image. Mounts the freshly created writeable Android rootfs image, and copies SuperSU files to the mounted image as specified in the SuperSU update-binary (if the directories from within the SuperSU installer zip are not present in ~/Downloads, the script will attempt to download them).
+Creates the directory /usr/local/Android_Images, formats a ~ 2GB sparse ext4 filesystem image in /usr/local/Android_Images, and copies the files from the factory shipped squashfs Android rootfs image to the new, writeable, image. Modifies Chrome OS files - either /usr/share/arc-setup/config.json, /etc/init/arc-setup-env or /etc/init/arc-system-mount.conf and /etc/init/arc-setup.conf (depending on CrOS version) - changing the (Android) ro.debuggable and mount-as-read-only flags. Renames the original filesystem image to .bk & replaces it with a symlink to the newly-created image. Mounts the freshly created writeable Android rootfs image, and copies SuperSU files to the mounted image as specified in the SuperSU update-binary (if the directories from within the SuperSU installer zip are not present in ~/Downloads, the script will attempt to download them).
 
 
 #### 02SEpatch.sh
@@ -85,8 +85,6 @@ Further information: The current version of the script replaces the original And
  Similarly, in order to revert to the original (unrooted) Android system if required, it will be necessary to either manually restore the backup, run the Unroot.sh script, force an update e.g. with a channel change, or restore from USB/SD.
   
  Updating the su binary from within the SuperSU GUI app may not work.
-
- Certain mods eg. Xposed are not compatible currently.
 
 The modified system image takes up a fair amount of space in /usr/local. Storing the image in certain other places doesn't seem to work, probably due to mount/login timings.
 
