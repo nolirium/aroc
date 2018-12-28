@@ -122,6 +122,10 @@ arm*) ANDROID_ARCH="armv7";;
 *) error 2 "Invalid architecture '$ARCH'.";;
 esac
 
+# ANDROID_ARCH="x86"
+echo "Detected Architecture: $ARCH"
+echo "Setting Architecture to: $ANDROID_ARCH"
+
 }
 
 create_image() {
