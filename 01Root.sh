@@ -193,7 +193,7 @@ if [ ! -e /usr/local/bin/busybox ]; then
    curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-armv6l -o busybox
   else
   
-   if [ ANDROID_ARCH=x86 ]; then
+   if [ $ANDROID_ARCH=x86 ]; then
 
 # Commenting out the x64 Intel version for now as most x64 systems still seem to use a 32 bit Android container.
 # So if we use the 32 bit BusyBox here, copying it to Android should also work on all machines.
