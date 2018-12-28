@@ -122,9 +122,10 @@ arm*) ANDROID_ARCH="armv7";;
 *) error 2 "Invalid architecture '$ARCH'.";;
 esac
 
-# ANDROID_ARCH="x86"
+echo
 echo "Detected Architecture: $ARCH"
 echo "Setting Architecture to: $ANDROID_ARCH"
+echo
 
 }
 
@@ -186,8 +187,8 @@ download_busybox () {
 
 if [ ! -e /usr/local/bin/busybox ]; then
   echo "Downloading BusyBox"
-  mkdir -p /tmp/aroc
-  cd /tmp/aroc
+  mkdir -p /usr/local/bin
+  cd /usr/local/bin
 
   if [ $ANDROID_ARCH=armv7 ]; then
    curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-armv6l -o busybox
@@ -209,11 +210,7 @@ if [ ! -e /usr/local/bin/busybox ]; then
     fi
   
   fi
-
-  echo "Moving BusyBox to /usr/local/bin"
-  mkdir -p /usr/local/bin
-  mv busybox /usr/local/bin/busybox
-  chmod a+x /usr/local/bin/busybox
+  chmod a+rx /usr/local/bin/busybox
 fi
 
 }
