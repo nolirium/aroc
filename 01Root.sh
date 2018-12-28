@@ -199,7 +199,7 @@ if [ ! -e /usr/local/bin/busybox ]; then
 # Commenting out the x64 Intel version for now as most x64 systems still seem to use a 32 bit Android container.
 # So if we use the 32 bit BusyBox here, copying it to Android should also work on all machines.
 #     curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-x86_64 -o busybox
-     curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-i686 -o busybox
+     curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-i686 > busybox
 
     else
      echo "Error!"
@@ -225,6 +225,10 @@ curl https://download.chainfire.eu/1122/SuperSU/SR3-SuperSU-v2.82-SR3-2017081313
 # Check filesize
 
 supersu_size=$(stat -c %s /tmp/aroc/SuperSU.zip)
+
+echo
+echo "Detected Size: $supersu_size"
+echo
 
 if [ $supersu_size = 6918737 ]; then
   echo "Unzipping SuperSU zip, and copying required directories to ~/Downloads."
