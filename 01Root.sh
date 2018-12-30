@@ -151,11 +151,17 @@ echo
 # Since the raw rootfs has increased in size lately, create a blank sparse 2GB image, which should takes only as much space on disk as required.
 
 if [ $ANDROID_ARCH=armv7 ]; then
+
+  echo "Creating armv7 img"
+  echo
   cd /usr/local/Android_Images
   dd if=/dev/zero of=system.raw.expanded.img count=1800000 bs=1024 status=progress
   else
 
   if [ $ANDROID_ARCH=x86 ]; then
+
+	echo "Creating x86 img"
+	echo
     cd /usr/local/Android_Images
     dd if=/dev/zero of=system.raw.expanded.img count=2200000 bs=1024 status=progress
 
@@ -241,6 +247,10 @@ fi
 # Check filesize again...
 
 supersu_size=$(stat -c %s /tmp/aroc/SuperSU.zip)
+
+echo
+echo "Detected Size: $supersu_size"
+echo
 
 if [ $supersu_size = 6918737 ]; then
   echo "Unzipping SuperSU zip, and copying required directories to ~/Downloads."
