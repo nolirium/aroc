@@ -150,7 +150,7 @@ echo
 
 # Since the raw rootfs has increased in size lately, create a blank sparse 2GB image, which should takes only as much space on disk as required.
 
-if [ $ANDROID_ARCH=armv7 ]; then
+if [ "$ANDROID_ARCH" = "armv7" ]; then
 
   echo "Creating armv7 img"
   echo
@@ -158,7 +158,7 @@ if [ $ANDROID_ARCH=armv7 ]; then
   dd if=/dev/zero of=system.raw.expanded.img count=1800000 bs=1024 status=progress
   else
 
-  if [ $ANDROID_ARCH=x86 ]; then
+  if [ "$ANDROID_ARCH" = "x86" ]; then
 
 	echo "Creating x86 img"
 	echo
@@ -196,11 +196,11 @@ if [ ! -e /usr/local/bin/busybox ]; then
   mkdir -p /usr/local/bin
   cd /usr/local/bin
 
-  if [ $ANDROID_ARCH=armv7 ]; then
+  if [ "$ANDROID_ARCH" = "armv7" ]; then
    curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-armv6l -o busybox
   else
   
-   if [ $ANDROID_ARCH=x86 ]; then
+   if [ "$ANDROID_ARCH" = "x86" ]; then
 
 # Commenting out the x64 Intel version for now as most x64 systems still seem to use a 32 bit Android container.
 # So if we use the 32 bit BusyBox here, copying it to Android should also work on all machines.
@@ -264,11 +264,11 @@ fi
 
 cp -r -a common /home/chronos/user/Downloads
   
-if [ $ANDROID_ARCH=armv7 ]; then
+if [ "$ANDROID_ARCH" = "armv7" ]; then
   cp -r -a armv7 /home/chronos/user/Downloads
   else
     
-  if [ $ANDROID_ARCH=x86 ]; then
+  if [ "$ANDROID_ARCH" = "x86" ]; then
     cp -r -a x86 /home/chronos/user/Downloads
     else
     echo "Error!"
@@ -699,7 +699,7 @@ fi
               system=/usr/local/Android_Images/Mounted/system
               #system_original=/opt/google/containers/android/rootfs/root/system
 
-#if [ $ANDROID_ARCH=armv7 ]; then
+#if [ "$ANDROID_ARCH" = "armv7" ]; then
 #              SU_ARCHDIR=/home/chronos/user/Downloads/armv7
 #  else
 #              SU_ARCHDIR=/home/chronos/user/Downloads/x86
