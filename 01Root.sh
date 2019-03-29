@@ -388,7 +388,7 @@ echo
 
 # Remount the Chrome OS root drive as writeable
 
-mount -o remount,rw / 2> /dev/null
+mount -o remount,rw /
 
 check_writeable_rootfs
 
@@ -462,12 +462,12 @@ if [ -e /opt/google/containers/android/system.raw.img ]; then
     
     if [ -e /opt/google/containers/android/system.raw.img.bk ]; then
       umount -l /usr/local/Android_Images/Original 2>/dev/null
-      mount -o loop,rw,sync /opt/google/containers/android/system.raw.img.bk /usr/local/Android_Images/Original 2>/dev/null
+      mount -o loop,ro,sync /opt/google/containers/android/system.raw.img.bk /usr/local/Android_Images/Original
     else
   
       if [ -e /home/chronos/user/Downloads/system.raw.img ]; then
         umount -l /usr/local/Android_Images/Original 2>/dev/null
-        mount -o loop,rw,sync /home/chronos/user/Downloads/system.raw.img /usr/local/Android_Images/Original 2>/dev/null
+        mount -o loop,ro,sync /home/chronos/user/Downloads/system.raw.img /usr/local/Android_Images/Original
       else
         echo
         echo "Error!"
@@ -486,18 +486,18 @@ if [ ! -L /opt/google/containers/android/system.raw.img ]; then
 
   if [ -e /opt/google/containers/android/system.raw.img ]; then
     umount -l /usr/local/Android_Images/Original 2>/dev/null
-    mount -o loop,rw,sync /opt/google/containers/android/system.raw.img /usr/local/Android_Images/Original 2>/dev/null
+    mount -o loop,ro,sync /opt/google/containers/android/system.raw.img /usr/local/Android_Images/Original
   else
   
     if [ -e /opt/google/containers/android/system.raw.img.bk ]; then
       umount -l /usr/local/Android_Images/Original 2>/dev/null
-      mount -o loop,rw,sync /opt/google/containers/android/system.raw.img.bk /usr/local/Android_Images/Original 2>/dev/null
+      mount -o loop,ro,sync /opt/google/containers/android/system.raw.img.bk /usr/local/Android_Images/Original
     else
       
       if [ -e /home/chronos/user/Downloads/system.raw.img ]; then
         echo "Mounting /home/chronos/user/Downloads/system.raw.img and copying files"
         umount -l /usr/local/Android_Images/Original 2>/dev/null
-        mount -o loop,rw,sync /home/chronos/user/Downloads/system.raw.img /usr/local/Android_Images/Original 2>/dev/null
+        mount -o loop,ro,sync /home/chronos/user/Downloads/system.raw.img /usr/local/Android_Images/Original
       else
         echo
         echo "Error!"
@@ -641,7 +641,7 @@ fi
 
 if [ ! -e /home/chronos/user/Downloads/common ]; then
   echo "SuperSU files not found in ~/Downloads! Attempting to download BusyBox and SuperSU now..."
-  mkdir -p /tmp/aroc
+  mkdir -p /tmp/aroc/
   cd /tmp/aroc
   
   download_busybox
@@ -657,7 +657,7 @@ mkdir -p /usr/local/Android_Images/Mounted
 
 # Mount our new Android rootfs
 
-mount -o loop,rw,sync /usr/local/Android_Images/system.raw.expanded.img /usr/local/Android_Images/Mounted 2>/dev/null
+mount -o loop,rw,sync /usr/local/Android_Images/system.raw.expanded.img /usr/local/Android_Images/Mounted
 
 # Set the right directory from which to copy the su binary.
 
