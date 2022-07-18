@@ -187,7 +187,7 @@ if [ ! -e /usr/local/bin/busybox ]; then
   cd /tmp/aroc
 
   if [ $ANDROID_ARCH=armv7 ]; then
-    curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-armv6l -o busybox
+    curl https://busybox.net/downloads/binaries/1.31.0-defconfig-multiarch-musl/busybox-armv7l -o busybox
   else
   
     if [ ANDROID_ARCH=x86 ]; then
@@ -195,7 +195,7 @@ if [ ! -e /usr/local/bin/busybox ]; then
 # Commenting out the x64 version as most x64 systems still use a 32 bit Android container.
 # So if we use the 32 bit BusyBox, copying it to Android will work.
 #     curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-x86_64 -o busybox
-      curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-i686 -o busybox
+      curl https://busybox.net/downloads/binaries/1.31.0-defconfig-multiarch-musl/busybox-i686 -o busybox
 
     else
       echo "Error!"
@@ -212,7 +212,7 @@ if [ ! -e /usr/local/bin/busybox ]; then
   mv busybox /usr/local/bin/busybox
   chmod a+x /usr/local/bin/busybox
 
-fi
+f
 
 }
 
