@@ -1,10 +1,7 @@
-# aroc-root-chromeos
-
+# aroc
 Android Root on ChromeOS - Chrome OS shell scripts to make a R/W copy of the Android container and copy su therein.
 
-- Note: The scripts have been tested on CrOS versions 54 - 72. Issues have been encountered with these scripts on a few older Chrome OS builds, but on most CrOS versions, everything *should* work as expected.
-
-----
+#### Note: The scripts have been tested on CrOS versions 54 - 72. Issues have been encountered with these scripts on a few older Chrome OS builds, but on most CrOS versions, everything *should* work as expected.
 
 ### Prerequisites
 
@@ -23,17 +20,16 @@ Or:
 
 `sudo /usr/share/vboot/bin/make_dev_ssd.sh --remove_rootfs_verification --partitions $(( $(rootdev -s | sed -r 's/.*(.)$/\1/') - 1))`
 
-----
 
 ### Instructions
 
 The scripts should be run, as root, in the following order:
 
-- 01Root.sh
+01Root.sh
 
 Reboot
 
-- 02SEPatch.sh
+02SEPatch.sh
 
 Reboot again
 
@@ -41,11 +37,11 @@ Then open Play Store, Root Checker, Ad-Away, etc, etc.
 
 The scripts may either be downloaded and ran locally, or via curl or wget e.g. 
 
-`curl -Ls https://raw.githubusercontent.com/emtee40/aroc-root-chromeos/onescript/01Root.sh | sudo sh`
+`curl -Ls https://raw.githubusercontent.com/nolirium/aroc/master/01Root.sh | sudo sh`
 
 Reboot
 
-`curl -Ls https://raw.githubusercontent.com/emtee40/aroc-root-chromeos/onescript/02SEPatch.sh | sudo sh`
+`curl -Ls https://raw.githubusercontent.com/nolirium/aroc/master/02SEPatch.sh | sudo sh`
 
 Reboot again
 
@@ -55,7 +51,7 @@ Reboot again
 
 To run the combined script:
 
-`curl -Ls https://raw.githubusercontent.com/emtee40/aroc-root-chromeos/onescript/RootandSEpatch.sh | sudo sh`
+`curl -Ls https://raw.githubusercontent.com/nolirium/aroc/onescript/RootandSEpatch.sh | sudo sh`
 
 ----
 
@@ -77,8 +73,6 @@ Following successful execution of the above, the Android instance should be root
 
 If a backup Android image is present in its original directory, attempts to remove the symlink and restores the backup. Failing this, if a backup is present in in ~/Downloads, attempts to replace the modified image with the backup. Also attempts to return the debuggable and mount-as-read-only flags to their original configuration, and copy back the original policy.30.
 
-----
-
 ### Known issues
 
 ##### IMPORTANT NOTE:  If you need to restore the original Android system image (for instance after a powerwash, or if the script didn't complete successfully), the easiest way to do this is to run the following command (then reboot) :
@@ -99,5 +93,3 @@ The modified system image takes up a fair amount of space in /usr/local. Storing
 Updates to the OS may break the procedure, and at the least may necessitate redoing all or part of it. 
 
 On some older CrOS versions, certain non-English fonts may break after rooting. This should no longer occur on the latest OS version.
-
-
