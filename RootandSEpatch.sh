@@ -194,7 +194,7 @@ if [ ! -e /usr/local/bin/busybox ]; then
 
 # Commenting out the x64 version as most x64 systems still use a 32 bit Android container.
 # So if we use the 32 bit BusyBox, copying it to Android will work.
-#     curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-x86_64 -o busybox
+#     curl https://busybox.net/downloads/binaries/1.31.0-defconfig-multiarch-musl/busybox-x86_64 -o busybox
       curl https://busybox.net/downloads/binaries/1.31.0-defconfig-multiarch-musl/busybox-i686 -o busybox
 
     else
