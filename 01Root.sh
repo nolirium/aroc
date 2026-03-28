@@ -122,6 +122,11 @@ arm*) ANDROID_ARCH="armv7";;
 *) error 2 "Invalid architecture '$ARCH'.";;
 esac
 
+echo
+echo "Detected Architecture: $ARCH"
+echo "Setting Architecture to: $ANDROID_ARCH"
+echo
+
 }
 
 create_image() {
@@ -145,12 +150,18 @@ echo
 
 # Since the raw rootfs has increased in size lately, create a blank sparse 2GB image, which should takes only as much space on disk as required.
 
-if [ $ANDROID_ARCH=armv7 ]; then
+if [ "$ANDROID_ARCH" = "armv7" ]; then
+
+  echo "Creating armv7 img"
+  echo
   cd /usr/local/Android_Images
   dd if=/dev/zero of=system.raw.expanded.img count=1800000 bs=1024 status=progress
   else
 
-  if [ $ANDROID_ARCH=x86 ]; then
+  if [ "$ANDROID_ARCH" = "x86" ]; then
+
+	echo "Creating x86 img"
+	echo
     cd /usr/local/Android_Images
     dd if=/dev/zero of=system.raw.expanded.img count=2200000 bs=1024 status=progress
 
@@ -182,19 +193,19 @@ download_busybox () {
 
 if [ ! -e /usr/local/bin/busybox ]; then
   echo "Downloading BusyBox"
-  mkdir -p /tmp/aroc
-  cd /tmp/aroc
+  mkdir -p /usr/local/bin
+  cd /usr/local/bin
 
-  if [ $ANDROID_ARCH=armv7 ]; then
+  if [ "$ANDROID_ARCH" = "armv7" ]; then
    curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-armv6l -o busybox
   else
   
-   if [ ANDROID_ARCH=x86 ]; then
+   if [ "$ANDROID_ARCH" = "x86" ]; then
 
 # Commenting out the x64 Intel version for now as most x64 systems still seem to use a 32 bit Android container.
 # So if we use the 32 bit BusyBox here, copying it to Android should also work on all machines.
 #     curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-x86_64 -o busybox
-     curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-i686 -o busybox
+     curl https://busybox.net/downloads/binaries/1.26.2-defconfig-multiarch/busybox-i686 > busybox
 
     else
      echo "Error!"
@@ -205,11 +216,7 @@ if [ ! -e /usr/local/bin/busybox ]; then
     fi
   
   fi
-
-  echo "Moving BusyBox to /usr/local/bin"
-  mkdir -p /usr/local/bin
-  mv busybox /usr/local/bin/busybox
-  chmod a+x /usr/local/bin/busybox
+  chmod a+rx /usr/local/bin/busybox
 fi
 
 }
@@ -225,6 +232,10 @@ curl https://download.chainfire.eu/1122/SuperSU/SR3-SuperSU-v2.82-SR3-2017081313
 
 supersu_size=$(stat -c %s /tmp/aroc/SuperSU.zip)
 
+echo
+echo "Detected Size: $supersu_size"
+echo
+
 if [ $supersu_size = 6918737 ]; then
   echo "Unzipping SuperSU zip, and copying required directories to ~/Downloads."
   /usr/local/bin/busybox unzip SuperSU.zip
@@ -236,6 +247,10 @@ fi
 # Check filesize again...
 
 supersu_size=$(stat -c %s /tmp/aroc/SuperSU.zip)
+
+echo
+echo "Detected Size: $supersu_size"
+echo
 
 if [ $supersu_size = 6918737 ]; then
   echo "Unzipping SuperSU zip, and copying required directories to ~/Downloads."
@@ -249,11 +264,11 @@ fi
 
 cp -r -a common /home/chronos/user/Downloads
   
-if [ $ANDROID_ARCH=armv7 ]; then
+if [ "$ANDROID_ARCH" = "armv7" ]; then
   cp -r -a armv7 /home/chronos/user/Downloads
   else
     
-  if [ $ANDROID_ARCH=x86 ]; then
+  if [ "$ANDROID_ARCH" = "x86" ]; then
     cp -r -a x86 /home/chronos/user/Downloads
     else
     echo "Error!"
@@ -684,7 +699,7 @@ fi
               system=/usr/local/Android_Images/Mounted/system
               #system_original=/opt/google/containers/android/rootfs/root/system
 
-#if [ $ANDROID_ARCH=armv7 ]; then
+#if [ "$ANDROID_ARCH" = "armv7" ]; then
 #              SU_ARCHDIR=/home/chronos/user/Downloads/armv7
 #  else
 #              SU_ARCHDIR=/home/chronos/user/Downloads/x86
