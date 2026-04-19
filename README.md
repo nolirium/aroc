@@ -1,3 +1,13 @@
+## ** PROJECT ARCHIVED  - NO LONGER OPERATIONAL **
+
+# ** DO NOT ATTEMPT TO USE **
+
+
+
+
+
+
+
 # aroc
 Android Root on ChromeOS - Chrome OS shell scripts to make a R/W copy of the Android container and copy su therein.
 
